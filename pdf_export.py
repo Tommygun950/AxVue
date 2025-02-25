@@ -78,7 +78,7 @@ def create_title_page(c: canvas, date_of_creation: str):
     ]
     c.setFont("Times-Roman", 12)
 
-    y_text = y_date - (0.5 * inch)
+    y_text = y_date - (4.5 * inch)
 
     leading = 14
     for line in paragraph_lines:
@@ -120,11 +120,82 @@ def create_disclosure_page(c: canvas):
 
     format_paragraph(c, page_width, y_disclosure_title, True, disclosure_paragraph)
 
-def create_overview_page(c: canvas, date_of_creation: str, ):
-    """Creates the layout for the overview page."""
+def create_overview_page(c: canvas, date_of_creation: str, scans_list: list):
+    """Creates the overview page of the pdf export."""
     page_width, page_height = LETTER
 
     y_overview_title = format_heading1(c, page_height, "Overview")
+
+    scan_name_string = ""
+    scan_total_cve_string = ""
+    scan_unique_cve_string = ""
+    total_cves_collected = 0
+
+    # Initialize counters for greatest totals.
+    greatest_total_cve = 0
+    greatest_total_cve_name = ""
+    greatest_unique_cve = 0
+    greatest_unique_cve_name = ""
+
+    for scan in scans_list:
+        # Concatenate scan names.
+        scan_name_string += scan.Get_Name() + ", "
+
+        # Get the numbers for this scan.
+        total_cves = scan.Return_Total_CVE_ID_List_Length()
+        unique_cves = scan.Return_CVE_Object_List_Length()
+
+        # Build the strings for printing each scan's results.
+        scan_total_cve_string += f"• {scan.Get_Name()}: {total_cves}\n"
+        scan_unique_cve_string += f"• {scan.Get_Name()}: {unique_cves}\n"
+
+        # Add to the overall total.
+        total_cves_collected += total_cves
+
+        # Check if this scan has the greatest total CVEs so far.
+        if total_cves > greatest_total_cve:
+            greatest_total_cve = total_cves
+            greatest_total_cve_name = scan.Get_Name()
+
+        # Check if this scan has the greatest unique CVEs so far.
+        if unique_cves > greatest_unique_cve:
+            greatest_unique_cve = unique_cves
+            greatest_unique_cve_name = scan.Get_Name()
+
+    # Adds KEV data to the strings.
+    scan_total_cve_string += f"• {kev_scan.Get_Name()}: {kev_scan.Return_Total_CVE_ID_List_Length()}"
+    scan_unique_cve_string += f"• {kev_scan.Get_Name()}: {kev_scan.Return_CVE_Object_List_Length()}"
+
+    overview_paragraph = (
+        "This page provides a high-level overview of the vulnerability assessment "
+        f"conducted on {date_of_creation} using the following tools: {scan_name_string}and with "
+        f"the inclusion of CVSS metrics and data from the National Vulnerability Database (NVD)."
+        " The data analyzed includes: "
+    )
+    y_overview_paragraph = format_paragraph(c, page_width, y_overview_title, True, overview_paragraph)
+
+    y_total_cve_title = format_paragraph(c, page_width, y_overview_paragraph, False, "Total CVEs Parsed: ")
+    y_total_cve_paragraph = format_paragraph(c, page_width, y_total_cve_title, False, scan_total_cve_string)
+
+    bar_chart_width = 4
+    bar_chart_height = 3
+    bar_chart_buffer = Create_Vertical_Bar_Chart_Total_CVES(scans_object_list, kev_scan, bar_chart_width, bar_chart_height)
+    Draw_Right_Image(c, page_width, y_total_cve_title, bar_chart_width, bar_chart_height, bar_chart_buffer)
+
+    y_unique_cve_title = Format_Heading3(c, page_width, y_total_cve_paragraph - (1.6 * inch), False,
+                                         "Unique CVEs Parsed: ")
+    y_unique_cve_paragraph = Format_Paragraph(c, page_width, y_unique_cve_title, False, scan_unique_cve_string)
+
+    bar_chart_buffer = Create_Vertical_Bar_Chart_Unique_CVES(scans_object_list, kev_scan, bar_chart_width, bar_chart_height)
+    Draw_Right_Image(c, page_width, y_unique_cve_title, bar_chart_width, bar_chart_height, bar_chart_buffer)
+
+    review_paragraph = (
+        f"Overall, the scans collectively parsed {total_cves_collected} CVEs over an equal and specified duration for each scan. "
+        f"The scan with the largest amount of total CVEs was {greatest_total_cve_name} and the scan with the largest amount of "
+        f"unique CVEs was {greatest_unique_cve_name}. For reference, {kev_scan.Get_Name()} contained a total of {kev_scan.Return_Total_CVE_ID_List_Length()} "
+        f"which were all unique."
+    )
+    y_review_paragraph = format_paragraph(c, page_width, y_unique_cve_paragraph - (1.6 * inch), True, review_paragraph)
 
 # Functions for creating the entire pdf export.
 def create_full_report(output_pdf_path):
@@ -137,9 +208,6 @@ def create_full_report(output_pdf_path):
     c.showPage()
 
     create_disclosure_page(c)
-    c.showPage()
-
-    create_overview_page(c, date_of_creation)
     c.showPage()
 
     c.save()
