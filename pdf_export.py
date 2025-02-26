@@ -7,7 +7,66 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit, ImageReader
 import pandas as pd
 import matplotlib.pyplot as plt
+from scan_class import SCAN
+from scans_processing import (
+    get_scan_names_str, return_total_scans_vulns,
+    get_greatest_scan_name
+)
 
+#Functions for kev identificaiton.
+def return_kev(scans: list[SCAN]) -> SCAN:
+    """Returns a seperate kev scan obj and removes it from the list."""
+    for i, scan in enumerate(scans):
+        if scan.get_name().lower() == 'kev':
+            return scans.pop(i)
+    return None
+
+#Functions for creating charts.
+def create_vertical_bar_chart(
+    scans_list: list[SCAN], scan_method: callable, y_axis: str, chart_title: str,
+    bar_color: str, fig_width=5.0, fig_height=4.0
+) -> io.BytesIO:
+    """Creates a vertical bar chart using a scan method to retrieve values."""
+    data = {"Scanner": [], chart_title: []}
+
+    for scan in scans_list:
+        data["Scanner"].append(scan.get_name())
+        data[chart_title].append(scan_method(scan))
+
+    df = pd.DataFrame(data)
+
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    df.plot(kind="bar", x="Scanner", y=chart_title, ax=ax, color=bar_color)
+
+    ax.set_xlabel("Scanner")
+    ax.set_ylabel(y_axis)
+    ax.set_title(chart_title)
+
+    plt.tight_layout()
+
+    chart_buffer = io.BytesIO()
+    plt.savefig(chart_buffer, format="png", dpi=72)
+    plt.close(fig)
+    chart_buffer.seek(0)
+
+    return chart_buffer
+
+#Functions for positioning charts.
+def draw_right_image(
+    c: canvas, page_width: float, y_element_above: float, img_buffer: io.BytesIO
+    ) -> float:
+    """Moves the image to the right side of the page."""
+    image_reader = ImageReader(img_buffer)
+
+    image_width = page_width / 2
+    image_height = page_width / 3
+
+    x_left = (page_width - 0.5 * inch) - image_width
+    y_bottom = y_element_above + (0.25 * inch) - image_height
+
+    c.drawImage(image_reader, x_left, y_bottom, width=image_width, height=image_height)
+
+    return y_bottom
 
 # Functions for styling text.
 def format_heading1(c: canvas, page_height: float, title: str) -> float:
@@ -18,6 +77,39 @@ def format_heading1(c: canvas, page_height: float, title: str) -> float:
     c.drawString(x_title, y_title, title)
 
     return y_title
+
+def format_heading3(
+    c: canvas, page_width: float, y_element_above: float, indent: bool, text: str
+    ) -> float:
+    """Formats a given text into a predefined heading3 style."""
+    font_name = "Times-Bold"
+    font_size = 16
+    c.setFont(font_name, font_size)
+    leading = font_size * 1.2
+
+    left_margin = 0.5 * inch
+    right_margin = 0.75 * inch
+    usable_width = page_width - (left_margin + right_margin)
+
+    lines = simpleSplit(text, font_name, font_size, usable_width)
+
+    current_y = y_element_above - (0.5 * inch)
+
+    if indent:
+        for idx, line in enumerate(lines):
+            if idx == 0:
+                x_pos = left_margin + (0.4 * inch)
+            else:
+                x_pos = left_margin
+
+            c.drawString(x_pos, current_y, line)
+            current_y -= leading
+    else:
+        for line in lines:
+            c.drawString(left_margin, current_y, line)
+            current_y -= leading
+
+    return current_y + (0.4 * inch)
 
 def format_paragraph(c: canvas, page_width: float, y_element_above: float, indent: bool, text: str):
     """Formats a given text and formats it into a predefined paragraph style."""
@@ -49,6 +141,16 @@ def format_paragraph(c: canvas, page_width: float, y_element_above: float, inden
             current_y -= leading
 
     return current_y
+
+def list_values(scans: list[SCAN], scan_method: callable) -> str:
+    """Lists out each scan's name and the value returned by scan_method in a bullet point format."""
+    bullet_points = []
+
+    for scan in scans:
+        value = scan_method(scan)
+        bullet_points.append(f"• {scan.get_name()}: {value}")
+
+    return "\n".join(bullet_points)
 
 # Functions for creating individual pages.
 def create_title_page(c: canvas, date_of_creation: str):
@@ -120,87 +222,99 @@ def create_disclosure_page(c: canvas):
 
     format_paragraph(c, page_width, y_disclosure_title, True, disclosure_paragraph)
 
-def create_overview_page(c: canvas, date_of_creation: str, scans_list: list):
+def create_overview_page(c: canvas, date_of_creation: str, scans_list: list[SCAN], kev_scan: SCAN):
     """Creates the overview page of the pdf export."""
     page_width, page_height = LETTER
 
     y_overview_title = format_heading1(c, page_height, "Overview")
 
-    scan_name_string = ""
-    scan_total_cve_string = ""
-    scan_unique_cve_string = ""
-    total_cves_collected = 0
-
-    # Initialize counters for greatest totals.
-    greatest_total_cve = 0
-    greatest_total_cve_name = ""
-    greatest_unique_cve = 0
-    greatest_unique_cve_name = ""
-
-    for scan in scans_list:
-        # Concatenate scan names.
-        scan_name_string += scan.Get_Name() + ", "
-
-        # Get the numbers for this scan.
-        total_cves = scan.Return_Total_CVE_ID_List_Length()
-        unique_cves = scan.Return_CVE_Object_List_Length()
-
-        # Build the strings for printing each scan's results.
-        scan_total_cve_string += f"• {scan.Get_Name()}: {total_cves}\n"
-        scan_unique_cve_string += f"• {scan.Get_Name()}: {unique_cves}\n"
-
-        # Add to the overall total.
-        total_cves_collected += total_cves
-
-        # Check if this scan has the greatest total CVEs so far.
-        if total_cves > greatest_total_cve:
-            greatest_total_cve = total_cves
-            greatest_total_cve_name = scan.Get_Name()
-
-        # Check if this scan has the greatest unique CVEs so far.
-        if unique_cves > greatest_unique_cve:
-            greatest_unique_cve = unique_cves
-            greatest_unique_cve_name = scan.Get_Name()
-
-    # Adds KEV data to the strings.
-    scan_total_cve_string += f"• {kev_scan.Get_Name()}: {kev_scan.Return_Total_CVE_ID_List_Length()}"
-    scan_unique_cve_string += f"• {kev_scan.Get_Name()}: {kev_scan.Return_CVE_Object_List_Length()}"
-
     overview_paragraph = (
-        "This page provides a high-level overview of the vulnerability assessment "
-        f"conducted on {date_of_creation} using the following tools: {scan_name_string}and with "
-        f"the inclusion of CVSS metrics and data from the National Vulnerability Database (NVD)."
+        "This page provides a high-level overview of the vulnerability assessments "
+        f"conducted on {date_of_creation} using the following tools: "
+        f"{get_scan_names_str(scans_list)} and with "
+        "the inclusion of CVSS metrics and data from the National Vulnerability Database (NVD)."
         " The data analyzed includes: "
     )
-    y_overview_paragraph = format_paragraph(c, page_width, y_overview_title, True, overview_paragraph)
-
-    y_total_cve_title = format_paragraph(c, page_width, y_overview_paragraph, False, "Total CVEs Parsed: ")
-    y_total_cve_paragraph = format_paragraph(c, page_width, y_total_cve_title, False, scan_total_cve_string)
-
-    bar_chart_width = 4
-    bar_chart_height = 3
-    bar_chart_buffer = Create_Vertical_Bar_Chart_Total_CVES(scans_object_list, kev_scan, bar_chart_width, bar_chart_height)
-    Draw_Right_Image(c, page_width, y_total_cve_title, bar_chart_width, bar_chart_height, bar_chart_buffer)
-
-    y_unique_cve_title = Format_Heading3(c, page_width, y_total_cve_paragraph - (1.6 * inch), False,
-                                         "Unique CVEs Parsed: ")
-    y_unique_cve_paragraph = Format_Paragraph(c, page_width, y_unique_cve_title, False, scan_unique_cve_string)
-
-    bar_chart_buffer = Create_Vertical_Bar_Chart_Unique_CVES(scans_object_list, kev_scan, bar_chart_width, bar_chart_height)
-    Draw_Right_Image(c, page_width, y_unique_cve_title, bar_chart_width, bar_chart_height, bar_chart_buffer)
-
-    review_paragraph = (
-        f"Overall, the scans collectively parsed {total_cves_collected} CVEs over an equal and specified duration for each scan. "
-        f"The scan with the largest amount of total CVEs was {greatest_total_cve_name} and the scan with the largest amount of "
-        f"unique CVEs was {greatest_unique_cve_name}. For reference, {kev_scan.Get_Name()} contained a total of {kev_scan.Return_Total_CVE_ID_List_Length()} "
-        f"which were all unique."
+    y_overview_paragraph = format_paragraph(
+        c, page_width, y_overview_title, True, overview_paragraph
     )
-    y_review_paragraph = format_paragraph(c, page_width, y_unique_cve_paragraph - (1.6 * inch), True, review_paragraph)
+    y_total_cve_title = format_heading3(
+        c, page_width, y_overview_paragraph, False, "Total CVEs Parsed: "
+    )
+    y_total_cve_paragraph = format_paragraph(
+        c, page_width, y_total_cve_title, False, list_values(scans_list, lambda s: s.return_total_vulns())
+    )
+
+    total_cves_barchart_buf = create_vertical_bar_chart(
+        scans_list, lambda s: s.return_total_vulns(), "Total CVEs", "Total CVEs", "skyblue"
+    )
+    draw_right_image(c, page_width, y_total_cve_title, total_cves_barchart_buf)
+
+    y_unique_cve_title = format_heading3(
+        c, page_width, y_total_cve_paragraph - (1.6 * inch), False, "Unique CVEs Parsed: "
+    )
+    y_unique_cve_paragraph = format_paragraph(
+        c, page_width, y_unique_cve_title, False, list_values(scans_list, lambda s: s.return_unique_vulns())
+    )
+
+    unique_cves_barchart_buf = create_vertical_bar_chart(
+        scans_list, lambda s: s.return_unique_vulns(), "Unique CVEs", "Unique CVEs", "skyblue"
+    )
+    draw_right_image(c, page_width, y_unique_cve_title, unique_cves_barchart_buf)
+
+    if kev_scan is not None:
+        review_paragraph = (
+            f"Overall, the scans collectively parsed "
+            f"{return_total_scans_vulns(scans_list)} CVEs over an equal "
+            f"and specified duration for each scan. The scan with the largest amount of "
+            f"total CVEs (excluding KEV) was {get_greatest_scan_name(scans_list, lambda s: s.return_total_vulns())} "
+            f"and the scan with the largest amount of unique CVEs (excluding KEV) was "
+            f"{get_greatest_scan_name(scans_list, lambda s: s.return_unique_vulns())}. For reference, "
+            f"{kev_scan.get_name()} contained a total of "
+            f"{kev_scan.return_unique_vulns()} unique vulnerabilities."
+        )
+    else:
+        review_paragraph = (
+            f"Overall, the scans collectively parsed "
+            f"{return_total_scans_vulns(scans_list)} CVEs over an equal "
+            f"and specified duration for each scan. The scan with the largest amount of "
+            f"total CVEs was {get_greatest_scan_name(scans_list, lambda s: s.return_total_vulns())} and "
+            f"the scan with the largest amount of unique CVEs was "
+            f"{get_greatest_scan_name(scans_list, lambda s: s.return_unique_vulns())}. "
+        )
+    format_paragraph(c, page_width, page_height - (8.5 * inch), True, review_paragraph)
+
+###############################################################################FIX THIS and use SQL!!!!!
+# def create_kev_comparison_page(c: canvas, scans_list):
+#     page_width, page_height = LETTER
+
+#     y_kev_title = format_heading1(c, page_height, "KEV Catalog Comparison")
+
+#     overview_paragraph = (
+#         "The Known Exploited Vulnerabilities (KEV) Catalog, maintained by the Cybersecurity and "
+#         "Infrastructure Security Agency (CISA), is a curated list of vulnerabilities that have been "
+#         "confirmed to be exploited in the wild. Comparing scan results against the KEV catalog helps "
+#         "measure how well each scanner detects vulnerabilities with known real-world exploitation. "
+#         "The following table shows the number of vulnerabilities detected by each scanner that are also listed in "
+#         "the KEV catalog: "
+#     )
+#     y_overview_paragraph = format_paragraph(c, page_width, y_kev_title, True, overview_paragraph)
+
+#     y_comparison_title = format_heading3(c, page_width, y_overview_paragraph, False, "CVEs in KEV: ")
+#     y_comparison_paragraph = format_paragraph(c, page_width, y_comparison_title, False, list_values(scans_list, "kev_vulns"))
+
+#     kev_barchart_buf = create_vertical_bar_chart(
+#         scans_list, "kev_vulns", "CVEs in KEV", "CVEs in KEV", "lightcoral"
+#     )
+#     draw_right_image(c, page_width, y_comparison_title, kev_barchart_buf)
 
 # Functions for creating the entire pdf export.
-def create_full_report(output_pdf_path):
+###############################################################################FIX THIS and use SQL!!!!!
+def create_full_report(output_pdf_path, scans_list: list[SCAN]):
     """Combines all of the pages together and saves it as a pdf."""
     date_of_creation = datetime.now().strftime("%B %d, %Y")
+    
+    kev_scan = return_kev(scans_list)
 
     c = canvas.Canvas(output_pdf_path, pagesize=LETTER)
 
@@ -209,5 +323,11 @@ def create_full_report(output_pdf_path):
 
     create_disclosure_page(c)
     c.showPage()
+
+    create_overview_page(c, date_of_creation, scans_list, kev_scan)
+    c.showPage()
+
+    # create_kev_comparison_page(c, scans_list)
+    # c.showPage()
 
     c.save()

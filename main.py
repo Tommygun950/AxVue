@@ -3,6 +3,7 @@ import sys
 from gui import MainWindow
 from PyQt5.QtWidgets import QApplication
 from cve_processing import retrieve_nvd_data
+from scan_class import SCAN
 from pdf_export import create_full_report
 
 def main():
@@ -19,10 +20,15 @@ def main():
         export_type = window.export_data[2]
         pages_to_export = window.export_data[3]
 
-        retrieve_nvd_data("vuln_data.db")
+        scan_obj_list = []
+        for scan in scans:
+            scan_obj = SCAN(scan["scan_name"], scan["total_vulns"], scan["unique_vulns"])
+            scan_obj_list.append(scan_obj)
+
+        #retrieve_nvd_data("vuln_data.db", nvd_api_key)
+        create_full_report("PDF_EXPORT.pdf", scan_obj_list)
 
     window.exportTriggered.connect(on_export)
-    create_full_report("PDF_EXPORT.pdf")
 
     window.show()
     sys.exit(app.exec_())

@@ -3,9 +3,6 @@ import csv
 import time
 import sqlite3
 import requests
-from api_secrets import my_api_key
-
-NVD_API_KEY = my_api_key
 
 def store_cves_from_csv(csv_file: str, db_file: str) -> tuple:
     """Retrieves all CVEs from a CSV file and stores them in an SQLite database.
@@ -86,7 +83,7 @@ def store_cves_from_csv(csv_file: str, db_file: str) -> tuple:
 
     return cve_id_list, cve_id_set
 
-def retrieve_nvd_data(db_file: str, query_throttle_time: float = 0.7):
+def retrieve_nvd_data(db_file: str, nvd_api_key: str, query_throttle_time: float = 0.7):
     """Fills in the rest of the sql table with nvd data for each cve."""
 
     def get_v3_metrics(metric_list: list) -> tuple:
@@ -165,7 +162,7 @@ def retrieve_nvd_data(db_file: str, query_throttle_time: float = 0.7):
     for (cve_id,) in incomplete_cves:
         start_time = time.time()
         url = f"{base_url}?cveId={cve_id}"
-        headers = {"apiKey": NVD_API_KEY}
+        headers = {"apiKey": nvd_api_key}
 
         timeout_seconds = 90
         try:
@@ -219,43 +216,8 @@ def retrieve_nvd_data(db_file: str, query_throttle_time: float = 0.7):
 
     conn.close()
 
-def return_avg_vuln_score(cve_id_set: set, db_file: str) -> float:
-    """Returns the average vuln score of a given scan."""
-    total_score = 0.0
-    count = 0
-
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-
-    query = "SELECT base_score FROM cves WHERE cve_id = ?"
-
-    for cve_id in cve_id_set:
-        cursor.execute(query, (cve_id,))
-        row = cursor.fetchone()
-
-        if row and row[0] is not None:
-            total_score += row[0]
-            count += 1
-
-    conn.close()
-
-    if count > 0:
-        return total_score / count
+    """Returns the number of unique cves in a scan."""
+    if "unique_vulns" not in scan:
+        return 0
     else:
-        return 0.0
-
-def return_field_value_ct(cve_id_set: set, field: str, value: str, db_file: str) -> int:
-    """Returns the number of cves that are of a particular value in a field in a scan."""
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-
-    placeholders = ",".join("?" for cve_id in cve_id_set)
-    query = f"SELECT COUNT(*) FROM cves WHERE cve_id IN ({placeholders}) AND {field} = ?"
-
-    params = list(cve_id_set) + [value]
-
-    cursor.execute(query, params)
-    result = cursor.fetchone()
-    conn.close()
-
-    return result[0]
+        return len(scan["unique_vulns"]) 
