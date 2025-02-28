@@ -23,3 +23,24 @@ def get_greatest_scan_name(scans_list: list[SCAN], scan_method: callable) -> str
             greatest_quantity = scan_value
             greatest_scan_name = scan.get_name()
     return greatest_scan_name
+
+def call_scan_by_name(scan_list: list[SCAN], scan_name: str) -> SCAN:
+    """Returns a scan based off the name of a scan."""
+    for scan in scan_list:
+        if scan_name == scan.get_name():
+            return scan
+
+def return_relation_percentage(scan1_method: callable, scan2_method: callable):
+    """Given 2 scan and functions, will find the relation percentage."""
+    scan1_value = scan1_method()
+    scan2_value = scan2_method()
+
+    if scan2_value == 0:
+        return 0.0
+
+    percentage = (scan1_value / scan2_value) * 100
+    return round(percentage, 1)
+
+def get_scan_values(scans_list, scan_method: callable) -> list:
+    """Given a list of scans and a method, it'll store all scan values in a list."""
+    return [scan_method(scan) for scan in scans_list]
