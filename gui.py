@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QGroupBox, QComboBox, QCheckBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from cve_processing import store_cves_from_csv
+from cve_processing import store_cves_from_csv, return_cached_percentage
 
 class AddScanDialog(QDialog):
     """Popup window for adding/editing a scan."""
@@ -89,10 +89,10 @@ class MainWindow(QMainWindow):
 
         # Table Widget for displaying scans.
         self.scan_table = QTableWidget()
-        self.scan_table.setColumnCount(6)
+        self.scan_table.setColumnCount(7)
         self.scan_table.setHorizontalHeaderLabels([
             "Scan Name", "File Path", "Total Vulnerabilities",
-            "Unique Vulnerabilities", "Edit", "Delete"
+            "Unique Vulnerabilities", "Cached %", "Edit", "Delete"
         ])
         self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
         header = self.scan_table.horizontalHeader()
@@ -102,6 +102,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(3, QHeaderView.Stretch)
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
         self.layout.addWidget(self.scan_table)
 
         self.load_scans()
@@ -253,6 +254,7 @@ class MainWindow(QMainWindow):
         row_position = self.scan_table.rowCount()
         self.scan_table.insertRow(row_position)
 
+        # Column 0: Scan Name (with checkbox)
         item = QTableWidgetItem(scan_name)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Unchecked)
@@ -260,23 +262,32 @@ class MainWindow(QMainWindow):
         item.setData(Qt.UserRole + 1, unique_cve_list)
         self.scan_table.setItem(row_position, 0, item)
 
+        # Column 1: File Path
         self.scan_table.setItem(row_position, 1, QTableWidgetItem(file_path))
+        # Column 2: Total Vulnerabilities
         self.scan_table.setItem(row_position, 2, QTableWidgetItem(total_vulnerabilities))
-
+        # Column 3: Unique Vulnerabilities (display count)
         try:
             unique_list = json.loads(unique_cve_list) if unique_cve_list else []
             unique_count = len(unique_list)
         except json.JSONDecodeError:
             unique_count = 0
         self.scan_table.setItem(row_position, 3, QTableWidgetItem(str(unique_count)))
-
+        
+        # Column 4: Cached %
+        # Use return_cached_percentage to compute the percentage.
+        cached_pct = return_cached_percentage(unique_list, "vuln_data.db")
+        self.scan_table.setItem(row_position, 4, QTableWidgetItem(f"{cached_pct}%"))
+        
+        # Column 5: Edit button
         btn_edit = QPushButton("Edit")
         btn_edit.clicked.connect(lambda _, sid=scan_id: self.edit_scan(sid))
-        self.scan_table.setCellWidget(row_position, 4, btn_edit)
-
+        self.scan_table.setCellWidget(row_position, 5, btn_edit)
+        
+        # Column 6: Delete button
         btn_delete = QPushButton("Delete")
         btn_delete.clicked.connect(lambda _, sid=scan_id: self.delete_scan(sid))
-        self.scan_table.setCellWidget(row_position, 5, btn_delete)
+        self.scan_table.setCellWidget(row_position, 6, btn_delete)
 
     def find_row_by_scan_id(self, scan_id):
         """Returns the table row index for the given scan_id."""
@@ -324,6 +335,8 @@ class MainWindow(QMainWindow):
                 except json.JSONDecodeError:
                     unique_count = 0
                 self.scan_table.setItem(row, 3, QTableWidgetItem(str(unique_count)))
+                cached_pct = return_cached_percentage(unique_list, "vuln_data.db")
+                self.scan_table.setItem(row, 4, QTableWidgetItem(f"{cached_pct}%"))
 
     def delete_scan(self, scan_id):
         """Deletes a scan from the database and table."""
@@ -413,6 +426,9 @@ class MainWindow(QMainWindow):
             scan_item = self.scan_table.item(row, 0)
             if scan_item and scan_item.checkState() == Qt.Checked:
                 scan_name = scan_item.text()
+                # Get the file path from column 1.
+                file_path_item = self.scan_table.item(row, 1)
+                file_path = file_path_item.text() if file_path_item is not None else ""
                 total_vulns_item = self.scan_table.item(row, 2)
                 total_vulns = int(total_vulns_item.text()) if total_vulns_item is not None else 0
                 unique_json = scan_item.data(Qt.UserRole + 1)
@@ -420,11 +436,8 @@ class MainWindow(QMainWindow):
                     unique_vulns = json.loads(unique_json) if unique_json else []
                 except Exception:
                     unique_vulns = []
-                scans.append({
-                    "scan_name": scan_name,
-                    "total_vulns": total_vulns,
-                    "unique_vulns": unique_vulns
-                })
+                # Append a list: [scan_name, file_path, total_vulns, unique_vulns]
+                scans.append([scan_name, file_path, total_vulns, unique_vulns])
 
         export_type = self.export_type_combo.currentText()
         pages_to_export = [page for page, checkbox in self.page_checkboxes.items() if checkbox.isChecked()]

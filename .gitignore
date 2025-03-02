@@ -161,3 +161,6 @@ cython_debug/
 api_secrets.py
 start_venv.sh
 *.pdf
+*.db
+*.db
+*.csv
