@@ -168,3 +168,5 @@ start_venv.sh
 *.json
 *.json
 *.json
+*.json
+*.db
