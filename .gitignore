@@ -164,3 +164,7 @@ start_venv.sh
 *.db
 *.db
 *.csv
+/.vscode
+*.json
+*.json
+*.json
