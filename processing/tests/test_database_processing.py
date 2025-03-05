@@ -215,7 +215,7 @@ def test_create_scan_data_table(temp_db_file):
     cursor.close()
     conn.close()
 
-    assert len(columns) == 6, f"Expected 6 columns in scan_data table, got {len(columns)}" # Test 1.
+    assert len(columns) == 7, f"Expected 7 columns in scan_data table, got {len(columns)}" # Test 1.
 
     pk_column = next((col for col in columns if col[5] == 1), None)
     assert pk_column is not None, "No primary key defined for scan_data table" # Test 2.
@@ -232,7 +232,7 @@ def test_create_scan_data_table(temp_db_file):
     expected_columns = [
         'id', 'scan_name', 'file_path',
         'total_vulnerabilities', 'unique_cve_list',
-        'cached_percentage'
+        'cache_enabled', 'cached_percentage'
     ]
 
     expected_types = {
@@ -241,6 +241,7 @@ def test_create_scan_data_table(temp_db_file):
         'file_path': 'TEXT',
         'total_vulnerabilities': 'INTEGER',
         'unique_cve_list': 'TEXT',
+        'cache_enabled': 'INTEGER',
         'cached_percentage': 'FLOAT'
     }
 
