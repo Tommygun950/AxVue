@@ -2,8 +2,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QProgressDialog
 from gui import MainWindow
-from cve_processing import store_cves_from_csv, NvdDataWorker
-from scan_class import SCAN
+from processing.cve_processing import store_cves_from_csv, NvdDataWorker
+from scan_models.scan_class import SCAN
 from pdf_export import create_full_report
 
 def main():

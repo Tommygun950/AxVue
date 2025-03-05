@@ -1,5 +1,5 @@
 """All functions pertaining to scan_list handling"""
-from scan_class import SCAN
+from scan_models.scan_class import SCAN
 
 def get_scan_names_str(scans_list: list[SCAN]) -> str:
     """Lists all of the scans in this format (s1, s2, s3, ...)"""

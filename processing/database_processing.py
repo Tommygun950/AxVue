@@ -14,6 +14,7 @@ def initialize_database(db_file: str = "vuln_data.db"):
     3. Initializing the table for nvd api keys.
     4. Initializing the table for past exports.
     5. Initializing the table for scan data.
+    6. Initializing the table for past exports.
     """
     # 1. Establish a conneciton & database.
     conn = sqlite3.connect(db_file)
@@ -23,6 +24,7 @@ def initialize_database(db_file: str = "vuln_data.db"):
     create_cves_table(cursor)
     create_api_key_table(cursor)
     create_scan_data_table(cursor)
+    create_past_exports_table(cursor)
 
 def create_cves_table(cursor: sqlite3.Cursor):
     """
@@ -97,7 +99,34 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
         file_path TEXT NOT NULL,
         total_vulnerabilities INTEGER,
         unique_cve_list TEXT,
-        cached_percentage REAL NOT NULL DEFAULT 0.0
+        cached_percentage FLOAT NOT NULL DEFAULT 0.0
     )
     """
     cursor.execute(create_scan_data_table_query)
+
+def create_past_exports_table(cursor: sqlite3.Cursor):
+    """
+    Creates the table for storing past exports.
+
+    Includes the following fields:
+    1. id -> primary key for identifying scans.
+    2. export_name -> given name of the scan from the user.
+    3. num_scans -> number of scans involved in export.
+    4. export_type -> pdf or excel export types.
+    5. export_date -> date of export created.
+    6. generation_time -> calculated time of generating report.
+    7. file_path -> selected filepath of export.
+    """
+    create_past_exports_table_query = """
+    CREATE TABLE IF NOT EXISTS past_exports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        export_name TEXT NOT NULL,
+        num_scans INTEGER NOT NULL,
+        export_type TEXT NOT NULL,
+        export_date TEXT NOT NULL,
+        generation_time REAL NOT NULL,
+        file_path TEXT NOT NULL
+    );
+    """
+
+    cursor.execute(create_past_exports_table_query)

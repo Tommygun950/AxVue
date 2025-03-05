@@ -11,6 +11,9 @@ from PyQt5.QtWidgets import (
     QToolBar, QAction, QDialog, QLineEdit, QLabel, QDialogButtonBox,
     QFileDialog, QHBoxLayout, QGroupBox, QComboBox, QCheckBox, QMessageBox
 )
+from processing.database_processing import(
+    initialize_database,
+)
 from PyQt5.QtCore import Qt, pyqtSignal
 
 
@@ -24,9 +27,6 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Vulnerability Scan Analyzer")
         self.resize(1200, 800)
-
-        # Apply global styling
-        gui_style.style_app_window(self)
 
         self.init_db()
         self.init_ui()

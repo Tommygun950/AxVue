@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QGroupBox, QComboBox, QCheckBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from cve_processing import store_cves_from_csv, return_cached_percentage
+from processing.cve_processing import store_cves_from_csv, return_cached_percentage
 
 class AddScanDialog(QDialog):
     """Popup window for adding/editing a scan."""

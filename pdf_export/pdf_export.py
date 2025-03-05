@@ -8,8 +8,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit, ImageReader
 import pandas as pd
 import matplotlib.pyplot as plt
-from scan_class import SCAN
-from scans_processing import (
+from scan_models.scan_class import SCAN
+from scan_models.scans_summary import (
     get_scan_names_str, return_total_scans_vulns,
     get_greatest_scan_name, call_scan_by_name,
     return_relation_percentage, get_scan_values,

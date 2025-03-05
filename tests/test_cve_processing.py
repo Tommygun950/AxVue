@@ -11,6 +11,7 @@ from processing.cve_processing import (
     get_v2_metrics,
     map_cvss_v2_impact,
     map_cvss_v2_user_interaction,
+    check_for_cve_record,
     process_single_cve
 )
 
@@ -319,7 +320,69 @@ def test_get_v2_metrics_primary(v2_metrics_data):
     assert result[7] == "LOW" # Test 8.
     assert result [8] == "LOW" # Test 9.
 
-### TESTS FOR PROCESSING CVES ###
+### TESTS FOR CEHCK_FOR_CVE_RECORD FUNCTION ###
+def test_check_for_cve_record_not_found(test_db_path):
+    """
+    Test that check_for_cve_record returns False when no record exists.
+
+    This function tests the following:
+    1. Given a cve id not in the cves table, return a false value.
+    """
+    result = check_for_cve_record("CVE-NOT-FOUND", test_db_path)
+    assert result is False # Test 1.
+
+def test_check_for_cve_record_valid_record(test_db_path):
+    """
+    Test that check_for_cve_record returns True when a record exists 
+    with valid metric values.
+
+    The function tests the following:
+    1. Given a cve id with non-NULL values, return true.
+    """
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+    valid_values = (7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW")
+    cursor.execute("""
+        INSERT OR REPLACE INTO cves (
+            cve_id, base_score, severity, attack_vector, attack_complexity,
+            privileges_required, user_interaction, confidentiality_impact,
+            integrity_impact, availability_impact
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, ("CVE-VALID", *valid_values))
+    conn.commit()
+    conn.close()
+
+    result = check_for_cve_record("CVE-VALID", test_db_path)
+    assert result is True # Test 1.
+
+### TESTS FOR PROCESS_SINGLE_CVE FUNCTION ###
+def test_process_single_cve_cached(test_db_path):
+    """
+    Test that process_single_cve returns (True, "cached") when the CVE record
+    already exists in the database with valid metric values.
+
+    The function tests the following:
+    1. If a cve already exists with non-NULL values, return (True, "cached").
+    """
+    valid_values = (7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW")
+
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT OR REPLACE INTO cves (
+            cve_id, base_score, severity, attack_vector, attack_complexity,
+            privileges_required, user_interaction, confidentiality_impact,
+            integrity_impact, availability_impact
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, ("CVE-ALREADY", *valid_values))
+
+    conn.commit()
+    conn.close()
+
+    result = process_single_cve("CVE-ALREADY", "fake-api-key", test_db_path)
+    assert result == (True, "cached") # Test 1.
+
 def test_process_single_cve_success(monkeypatch, test_db_path, nvd_api_response):
     """
     Test successful processing of a single CVE.

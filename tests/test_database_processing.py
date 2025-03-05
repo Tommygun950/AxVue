@@ -7,7 +7,6 @@ import tempfile
 import pytest
 from processing.database_processing import (
     initialize_database,
-    create_cves_table, create_api_key_table, create_scan_data_table
 )
 
 @pytest.fixture
@@ -39,6 +38,7 @@ def test_initialize_database(temp_db_file):
         a. cves table was created.
         b. nvd_api_key table was created.
         c. scan_data table was created.
+        d. past_exports table was created.
     """
     initialize_database(temp_db_file)
 
@@ -62,6 +62,7 @@ def test_initialize_database(temp_db_file):
     assert 'cves' in table_names, "cves table was not created" # Test 2a.
     assert 'nvd_api_key' in table_names, "nvd_api_key table was not created" # Test 2b.
     assert 'scan_data' in table_names, "scan_data table was not created" # Test 2c.
+    assert 'past_exports' in table_names, "past_exports table was not created" # Test 2d.
 
 def test_create_cves_table(temp_db_file):
     """
@@ -214,7 +215,7 @@ def test_create_scan_data_table(temp_db_file):
     cursor.close()
     conn.close()
 
-    assert len(columns) == 6, f"Expected 5 columns in scan_data table, got {len(columns)}" # Test 1.
+    assert len(columns) == 6, f"Expected 6 columns in scan_data table, got {len(columns)}" # Test 1.
 
     pk_column = next((col for col in columns if col[5] == 1), None)
     assert pk_column is not None, "No primary key defined for scan_data table" # Test 2.
@@ -260,10 +261,75 @@ def test_create_scan_data_table(temp_db_file):
              '{required_col}' in CREATE TABLE statement
         """ # Test 5.
 
+def test_past_exports_data_table(temp_db_file):
+    """
+    Test that the past_exports table has the correct structure.
 
-if __name__ == "__main__":
-    test_initialize_database(temp_db_file)
+    This function tests the following:
+    1. The table has the correct number of fields/columns.
+    2. The primary key exists and is an integer with autoincrement.
+    3. The name of the primary key should be id.
+    4. All of the expected fields/columns exist with correct data types.
+    5. All columns should not be null.
+    """
+    initialize_database(temp_db_file)
 
-    test_create_cves_table(temp_db_file)
-    test_create_api_key_table(temp_db_file)
-    test_create_scan_data_table(temp_db_file)
+    conn = sqlite3.connect(temp_db_file)
+    cursor = conn.cursor()
+
+    cursor.execute("PRAGMA table_info(past_exports);")
+    columns = cursor.fetchall()
+
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='past_exports';")
+
+    create_stmt = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    assert len(columns) == 7, f"Expected 7 columns in past_exports table, got {len(columns)}" # Test 1.
+
+    pk_column = next((col for col in columns if col[5] == 1), None)
+    assert pk_column is not None, "No primary key defined for past_exports table" # Test 2.
+
+    assert pk_column[1] == 'id', f"""
+        Expected primary key to be 'id', got '{pk_column[1]}'
+    """ # Test 3.
+
+    assert "PRIMARY KEY AUTOINCREMENT" in create_stmt, """
+        id column should have PRIMARY KEY AUTOINCREMENT constraint
+    """ # Test 2.
+
+    column_names = [col[1] for col in columns]
+    expected_columns = [
+        'id', 'export_name', 'num_scans',
+        'export_type', 'export_date',
+        'generation_time', 'file_path'
+    ]
+
+    expected_types = {
+        'id': 'INTEGER',
+        'export_name': 'TEXT',
+        'num_scans': 'INTEGER',
+        'export_type': 'TEXT',
+        'export_date': 'TEXT',
+        'generation_time': 'REAL',
+        'file_path': 'TEXT'
+    }
+
+    for expected_col in expected_columns:
+        assert expected_col in column_names, f"""
+            Column '{expected_col}' missing from scan_data table
+        """ # Test 4.
+        col_index = column_names.index(expected_col)
+        col_type = columns[col_index][2]
+        assert col_type == expected_types[expected_col], f"""
+            Column '{expected_col}' should be {expected_types[expected_col]}, got {col_type}
+        """ # Test 4.
+
+    required_columns = ['export_name', 'num_scans', 'export_type', 'export_date', 'generation_time', 'file_path']
+    for required_col in required_columns:
+        assert f"{required_col} {expected_types[required_col]} NOT NULL" in create_stmt, f"""
+            NOT NULL constraint missing for required column
+             '{required_col}' in CREATE TABLE statement
+        """ # Test 5.
