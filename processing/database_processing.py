@@ -22,8 +22,14 @@ def initialize_database(db_file: str = "vuln_data.db"):
 
     # 2. Create tables (if they don't exist yet).
     create_cves_table(cursor)
+
     create_api_key_table(cursor)
+
     create_scan_data_table(cursor)
+
+    create_queried_nvd_data_feed_table(cursor)
+    create_stored_nvd_data_feed_table(cursor)
+
     create_past_exports_table(cursor)
 
 def create_cves_table(cursor: sqlite3.Cursor):
@@ -65,8 +71,9 @@ def create_api_key_table(cursor: sqlite3.Cursor):
     Includes the following fields:
     1. id -> primary key for identifying nvd api keys.
     2. key_name -> the given name of an nvd api key given by the user.
-    3. status -> notifies program if api key works.
-    4. error_count -> used to count # of 404's returned from an api key.
+    3. key_value -> the actual api key string.
+    4. status -> notifies program if api key works.
+    5. error_count -> used to count # of 404's returned from an api key.
     """
     create_nvd_api_key_table_query = """
     CREATE TABLE IF NOT EXISTS nvd_api_key (
@@ -105,6 +112,50 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
     )
     """
     cursor.execute(create_scan_data_table_query)
+
+def create_queried_nvd_data_feed_table(cursor: sqlite3.Cursor):
+    """
+    Creates the table for storing queried nvd data feeds.
+
+    Includes the following fields:
+    1. year -> year of data feed & text primary key.
+    2. file_byte_size -> size of file in bytes.
+    3. last_queried -> last time feed was queried.
+    4. status -> whether the data is available or not.
+    """
+    create_queried_nvd_data_feed_table_query = """
+    CREATE TABLE IF NOT EXISTS queried_nvd_data_feed (
+        year TEXT PRIMARY KEY,
+        file_byte_size INTEGER NOT NULL,
+        last_queried TEXT NOT NULL,
+        status TEXT NOT NULL
+    )
+    """
+    cursor.execute(create_queried_nvd_data_feed_table_query)
+
+def create_stored_nvd_data_feed_table(cursor: sqlite3.Cursor):
+    """
+    Creates the table for storing stored nvd data feeds.
+
+    Includes the following fields:
+    1. year -> year of data feed & text primary key.
+    2. file_byte_size -> size of file in bytes.
+    3. cve_count -> count of cves stored in database.
+    4. last_updated -> last time json was stored/downloaded.
+    5. status -> whether the data is available or not.
+    6. is_complete -> boolean if all cves were cached from data feed.
+    """
+    create_stored_nvd_data_feed_table_query = """
+    CREATE TABLE IF NOT EXISTS stored_nvd_data_feed (
+        year TEXT PRIMARY KEY,
+        file_byte_size INTEGER NOT NULL,
+        cve_count INTEGER NOT NULL DEFAULT 0,
+        last_updated TEXT NOT NULL,
+        status TEXT NOT NULL,
+        is_complete INTEGER NOT NULL DEFAULT 0
+    )
+    """
+    cursor.execute(create_stored_nvd_data_feed_table_query)
 
 def create_past_exports_table(cursor: sqlite3.Cursor):
     """

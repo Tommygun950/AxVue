@@ -20,9 +20,9 @@ class ScansWindow(QMainWindow):
         2. create the vertical layout for all of the widgets.
         3. Establish the following widgets:
             a. An excerpt/summery on this page.
-            b. Table of scans.
-            c. A list of buttons:
-                1. Add Scan.
+            b. A section for scans with the following:
+                1. Table of scans.
+                b. A list of buttons:
         """
         super().__init__()
 
@@ -36,38 +36,49 @@ class ScansWindow(QMainWindow):
         self.layout = QVBoxLayout(self.central_widget)
 
         self.init_scans_summary()
-        self.init_scans_table()
-        self.init_button_layout()
+        self.init_scans_section()
 
     def init_toolbar(self):
-        """Creates a toolbar with actions."""
+        """
+        Creates a toolbar with actions to switch between pages.
+
+        This function should:
+        1. Create the main toolbar.
+        2. Create the following buttons:
+            a. 1. Scans -> opens ScansWindow.
+            b. 2. API Keys -> opens ApiKeysWindow.
+            c. 3. Cache -> opens CacheWindow.
+            d. 4. Create report -> opens CreateReportWindow.
+            e. 5. Exports -> opens ExportsWindow.
+        3. Add the buttons to the toolbar.
+        """
         toolbar = QToolBar("Main Toolbar")
         self.addToolBar(toolbar)
 
-        create_report_action = QAction("Create Report", self)
-        exports_action = QAction("Exports", self)
-        scans_action = QAction("Scans", self)
-        api_keys_action = QAction("API Keys", self)
-        cache_action = QAction("Cache", self)
+        scans_action = QAction("1. Scans", self)
+        api_keys_action = QAction("2. API Keys", self)
+        cache_action = QAction("3. Cache", self)   
+        create_report_action = QAction("4. Create Report", self)        
+        exports_action = QAction("5. Exports", self)
         
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
         toolbar.addAction(scans_action)
         toolbar.addAction(api_keys_action)
         toolbar.addAction(cache_action)
+        toolbar.addAction(create_report_action)
+        toolbar.addAction(exports_action)
 
     def init_scans_summary(self):
         """
         Initializes the summary for the page.
 
-        this function should:
+        This function should:
         1. Creates a QGroupBox with the following:
             a. Title of "Scans Summary".
             b. The inclusion of the summary text.
         2. Displays the layout on the main layout.
         """
-        self.exports_summary_group = QGroupBox("Exports Summary")
-        group_layout = QVBoxLayout(self.exports_summary_group)
+        self.scans_summary_group = QGroupBox("Scans Summary")
+        group_layout = QVBoxLayout(self.scans_summary_group)
 
         summary_text = (
             "On this page, you have the ability to add and manage your csv scan "
@@ -92,75 +103,91 @@ class ScansWindow(QMainWindow):
         summary_label.setWordWrap(True)
         group_layout.addWidget(summary_label)
         
-        self.layout.addWidget(self.exports_summary_group)
+        self.layout.addWidget(self.scans_summary_group)
 
-    def init_scans_table(self):
+    def init_scans_section(self):
         """
-        Initializes the table to display the scans.
+        Initializes the section for the scans data.
 
         This function should:
-        1. Create the label "Scans: ".
-        2. Setup a table widget with the following columns:
-            a. Scan Name.
-            b. File Path.
-            c. Total CVE IDs.
-            d. Unique CVE IDs.
-            e. Cache.
-            f. Edit.
-            g. Delete.
-        3. Ensure the resising of the columns do the following:
-            a. Scan name -> Stretch.
-            b. File Path -> Stretch.
-            c. Total CVE IDs -> Resize to Contents.
-            d. Unique CVE IDs -> Resize to Contents.
-            e. Cache -> Resize to Contents.
-            f. Edit -> Resize to Contents.
-            g. Delete -> Resize to Contents.
-        4. Add the label and table widget to the layout.
+        1. Create a QGroupBox layout.
+        2. Create a QVBoxLayout layout with the following:
+            a. Horizontal button layout.
+            b. Scans table.
+        3. Add The QVBoxLayout to the QGroupBox.
+        4. Add QGroupBox to the main layout for the page.
         """
-        scans_label = QLabel("Scans:")
+        scans_group = QGroupBox("Scans")
+        scans_section_layout = QVBoxLayout(scans_group)
 
-        self.scan_table = QTableWidget()
-        self.scan_table.setColumnCount(8)
+        def init_button_layout():
+            """
+            Initilizes the button layout at the bottom of the window.
 
-        self.scan_table.setHorizontalHeaderLabels([
-            "Scan Name", "File Path", "Total CVE IDs",
-            "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
-        ])
+            The function should:
+            1. Create a horizontal layout for the buttons.
+            2. Create the following buttons:
+                a. Add Scan.
+            3. Ensure resizing of the buttons do the following:
+                a. Add Scan -> Stretch.
+            4. Add button layout to the main layout.
+            """
+            button_layout = QHBoxLayout()
 
-        self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
+            self.add_scan_button = QPushButton("Add Scan")
+            button_layout.addWidget(self.add_scan_button)
 
-        header = self.scan_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(7, QHeaderView.ResizeToContents)
+            scans_section_layout.addLayout(button_layout)
 
-        self.layout.addWidget(scans_label)
-        self.layout.addWidget(self.scan_table)
-    
-    def init_button_layout(self):
-        """
-        Initilizes the button layout at the bottom of the window.
+        def init_scans_table():
+            """
+            Initializes the table to display the scans.
 
-        The function should:
-        1. Create a horizontal layout for the buttons.
-        2. Create the following buttons:
-            a. Add Scan.
-        3. Ensure resizing of the buttons do the following:
-            a. Add Scan -> Stretch.
-        4. Add button layout to the main layout.
-        """
-        button_layout = QHBoxLayout()
+            This function should:
+            1. Setup a table widget with the following columns:
+                a. Scan Name.
+                b. File Path.
+                c. Total CVE IDs.
+                d. Unique CVE IDs.
+                e. Cache.
+                f. Edit.
+                g. Delete.
+            2. Ensure the resising of the columns do the following:
+                a. Scan name -> Stretch.
+                b. File Path -> Stretch.
+                c. Total CVE IDs -> Resize to Contents.
+                d. Unique CVE IDs -> Resize to Contents.
+                e. Cache -> Resize to Contents.
+                f. Edit -> Resize to Contents.
+                g. Delete -> Resize to Contents.
+            3. Add the label and table widget to the layout.
+            """
+            self.scan_table = QTableWidget()
+            self.scan_table.setColumnCount(8)
 
-        self.add_scan_button = QPushButton("Add Scan")
-        self.layout.addWidget(self.add_scan_button)
+            self.scan_table.setHorizontalHeaderLabels([
+                "Scan Name", "File Path", "Total CVE IDs",
+                "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
+            ])
 
-        self.layout.addLayout(button_layout)
+            self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
+
+            header = self.scan_table.horizontalHeader()
+            header.setSectionResizeMode(0, QHeaderView.Stretch)
+            header.setSectionResizeMode(1, QHeaderView.Stretch)
+            header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(7, QHeaderView.ResizeToContents)
+
+            scans_section_layout.addWidget(self.scan_table)
+
+        init_button_layout()
+        init_scans_table()
+
+        self.layout.addWidget(scans_group)
 
 if __name__ == "__main__":
     app = QApplication([])

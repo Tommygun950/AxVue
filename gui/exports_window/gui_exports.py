@@ -1,3 +1,6 @@
+"""
+This file is used to construct the Exports window in the GUI.
+"""
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QGroupBox,
@@ -29,36 +32,36 @@ class ExportsWindow(QMainWindow):
         self.layout = QVBoxLayout(self.central_widget)
 
         self.init_past_exports_summary()
-        self.init_past_exports_table()
+        self.init_past_exports_section()
 
     def init_toolbar(self):
         """
-        Creates a toolbar with actions.
+        Creates a toolbar with actions to switch between pages.
 
         This function should:
         1. Create the main toolbar.
         2. Create the following buttons:
-            a. Create Report.
-            b. Exports.
-            c. Scans.
-            d. API Keys.
-            e. Cache.
+            a. 1. Scans -> opens ScansWindow.
+            b. 2. API Keys -> opens ApiKeysWindow.
+            c. 3. Cache -> opens CacheWindow.
+            d. 4. Create report -> opens CreateReportWindow.
+            e. 5. Exports -> opens ExportsWindow.
         3. Add the buttons to the toolbar.
         """
         toolbar = QToolBar("Main Toolbar")
         self.addToolBar(toolbar)
+
+        scans_action = QAction("1. Scans", self)
+        api_keys_action = QAction("2. API Keys", self)
+        cache_action = QAction("3. Cache", self)   
+        create_report_action = QAction("4. Create Report", self)        
+        exports_action = QAction("5. Exports", self)
         
-        create_report_action = QAction("Create Report", self)
-        exports_action = QAction("Exports", self)
-        scans_action = QAction("Scans", self)
-        api_keys_action = QAction("API Keys", self)
-        cache_action = QAction("Cache", self)
-        
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
         toolbar.addAction(scans_action)
         toolbar.addAction(api_keys_action)
         toolbar.addAction(cache_action)
+        toolbar.addAction(create_report_action)
+        toolbar.addAction(exports_action)
 
     def init_past_exports_summary(self):
         """
@@ -87,12 +90,12 @@ class ExportsWindow(QMainWindow):
         
         self.layout.addWidget(self.exports_summary_group)
 
-    def init_past_exports_table(self):
+    def init_past_exports_section(self):
         """
         Initializes the past exports table.
 
         This function should:
-        1. Create the label "Past Exports: ".
+        1. Create a QGroupBox with the title "Past Exports".
         2. Setup a table widget with the following columns:
             a. Export Name.
             b. # of Scans.
@@ -107,9 +110,10 @@ class ExportsWindow(QMainWindow):
             d. Export Date -> Stretch.
             e. Export -> Resize to Contents.
             f. Delete -> Resize to Contents.
-        4. Add the labl and the table widget to the layout.
+        4. Add the table to the QGroupBox.
         """
-        past_exports_label = QLabel("Past Exports:")
+        past_exports_group = QGroupBox("Past Exports")
+        group_layout = QVBoxLayout(past_exports_group)
 
         self.past_exports_table = QTableWidget()
         self.past_exports_table.setColumnCount(6)
@@ -125,8 +129,8 @@ class ExportsWindow(QMainWindow):
         self.past_exports_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
         self.past_exports_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)
 
-        self.layout.addWidget(past_exports_label)
-        self.layout.addWidget(self.past_exports_table)
+        group_layout.addWidget(self.past_exports_table)
+        self.layout.addWidget(past_exports_group)
 
 if __name__ == "__main__":
     app = QApplication([])

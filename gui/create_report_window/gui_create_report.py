@@ -36,42 +36,42 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
 
-        self.init_api_key_table()
-        self.init_scans_table()
+        self.init_api_key_section()
+        self.init_scans_section()
         self.init_export_config()
 
     def init_toolbar(self):
         """
-        Creates a toolbar with actions.
+        Creates a toolbar with actions to switch between pages.
 
         This function should:
         1. Create the main toolbar.
         2. Create the following buttons:
-            a. Create Report.
-            b. Exports.
-            c. Scans.
-            d. API Keys.
-            e. Cache.
+            a. 1. Scans -> opens ScansWindow.
+            b. 2. API Keys -> opens ApiKeysWindow.
+            c. 3. Cache -> opens CacheWindow.
+            d. 4. Create report -> opens CreateReportWindow.
+            e. 5. Exports -> opens ExportsWindow.
         3. Add the buttons to the toolbar.
         """
         toolbar = QToolBar("Main Toolbar")
         self.addToolBar(toolbar)
+
+        scans_action = QAction("1. Scans", self)
+        api_keys_action = QAction("2. API Keys", self)
+        cache_action = QAction("3. Cache", self)   
+        create_report_action = QAction("4. Create Report", self)        
+        exports_action = QAction("5. Exports", self)
         
-        create_report_action = QAction("Create Report", self)
-        exports_action = QAction("Exports", self)
-        scans_action = QAction("Scans", self)
-        api_keys_action = QAction("API Keys", self)
-        cache_action = QAction("Cache", self)
-        
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
         toolbar.addAction(scans_action)
         toolbar.addAction(api_keys_action)
         toolbar.addAction(cache_action)
+        toolbar.addAction(create_report_action)
+        toolbar.addAction(exports_action)
 
-    def init_api_key_table(self):
+    def init_api_key_section(self):
         """
-        Creates the selected api keys table.
+        Creates the selected api keys section.
 
         This function should:
         1. Create the label "Selected API Keys: ".
@@ -87,7 +87,8 @@ class MainWindow(QMainWindow):
             d. Remove -> Resize to Contents.
         4. Add the labl and the table widget to the layout.
         """
-        self.api_key_label = QLabel("Selected API Keys:")
+        api_key_group = QGroupBox("Selected API Keys:")
+        group_layout = QVBoxLayout(api_key_group)
 
         self.api_key_table = QTableWidget()
         self.api_key_table.setColumnCount(4)
@@ -102,12 +103,12 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-        self.layout.addWidget(self.api_key_label)
-        self.layout.addWidget(self.api_key_table)
+        group_layout.addWidget(self.api_key_table)
+        self.layout.addWidget(api_key_group)
 
-    def init_scans_table(self):
+    def init_scans_section(self):
         """
-        Creates the selected scans table.
+        Creates the selected scans section.
 
         This function should:
         1. Create the label "Selected Scans: ".
@@ -129,10 +130,10 @@ class MainWindow(QMainWindow):
             g. Remove -> Resize to Contents.
         4. Add the label and the table widget to the layout.
         """
-        self.scan_label = QLabel("Selected Scans:")
+        scans_group = QGroupBox("Selected Scans:")
+        group_layout = QVBoxLayout(scans_group)
 
         self.scan_table = QTableWidget()
-
         self.scan_table.setColumnCount(7)
         self.scan_table.setHorizontalHeaderLabels([
             "Scan Name", "File Path", "Total CVE IDs",
@@ -150,42 +151,42 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
 
-        self.layout.addWidget(self.scan_label)
-        self.layout.addWidget(self.scan_table)
+        group_layout.addWidget(self.scan_table)
+        self.layout.addWidget(scans_group)
 
     def init_export_config(self):
-            """
-            Creates the export configuration section.
+        """
+        Creates the export configuration section.
 
-            This function should:
-            1. Creat the groupbox for Export Configuration
-            2. Add the combo box for Export Type selection.
-            3. Add the checkbox for the Pages to Export section.
-            4. Add the Create Report button.
-            5. Add layout to the main window.
-            """
-            self.export_config_group = QGroupBox("Export Configuration")
-            group_layout = QVBoxLayout(self.export_config_group)
+        This function should:
+        1. Creat the groupbox for Export Configuration
+        2. Add the combo box for Export Type selection.
+        3. Add the checkbox for the Pages to Export section.
+        4. Add the Create Report button.
+        5. Add layout to the main window.
+        """
+        self.export_config_group = QGroupBox("Export Configuration")
+        group_layout = QVBoxLayout(self.export_config_group)
 
-            type_layout = QHBoxLayout()
-            type_layout.addWidget(QLabel("Export Type:"))
-            self.export_type_combo = QComboBox()
-            self.export_type_combo.addItems(["PDF", "Excel"])
-            type_layout.addWidget(self.export_type_combo)
-            group_layout.addLayout(type_layout)
+        type_layout = QHBoxLayout()
+        type_layout.addWidget(QLabel("Export Type:"))
+        self.export_type_combo = QComboBox()
+        self.export_type_combo.addItems(["PDF", "Excel"])
+        type_layout.addWidget(self.export_type_combo)
+        group_layout.addLayout(type_layout)
 
-            group_layout.addWidget(QLabel("Pages to Export:"))
-            self.page_checkboxes = {}
-            for page in ["KEV Catalog Comparison", "Base Metrics", "Temporal Metrics"]:
-                checkbox = QCheckBox(page)
-                checkbox.setChecked(True)
-                self.page_checkboxes[page] = checkbox
-                group_layout.addWidget(checkbox)
+        group_layout.addWidget(QLabel("Pages to Export:"))
+        self.page_checkboxes = {}
+        for page in ["KEV Catalog Comparison", "Base Metrics", "Temporal Metrics"]:
+            checkbox = QCheckBox(page)
+            checkbox.setChecked(True)
+            self.page_checkboxes[page] = checkbox
+            group_layout.addWidget(checkbox)
 
-            self.export_button = QPushButton("Create Report")
-            group_layout.addWidget(self.export_button)
+        self.export_button = QPushButton("Create Report")
+        group_layout.addWidget(self.export_button)
 
-            self.layout.addWidget(self.export_config_group)
+        self.layout.addWidget(self.export_config_group)
 
 if __name__ == "__main__":
     app = QApplication([])
