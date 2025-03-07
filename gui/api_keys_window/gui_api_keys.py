@@ -3,10 +3,9 @@ This file is used to construct the API Keys window in the GUI.
 """
 
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QMainWindow, QVBoxLayout,
+    QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QPushButton,
-    QToolBar, QAction, QLabel, QHBoxLayout,
-    QGroupBox
+    QLabel, QHBoxLayout, QGroupBox
 )
 
 class ApiKeysWindow(QMainWindow):
@@ -16,9 +15,8 @@ class ApiKeysWindow(QMainWindow):
         This function initializes the api keys page & features.
 
         This function should:
-        1. Initialize the toolbar.
-        2. create the vertical layout for all of the widgets.
-        3. Establish the following widgets:
+        1. create the vertical layout for all of the widgets.
+        2. Establish the following widgets:
             a. An excerpt/summery on this page.
             b. Table of scans.
             c. A list of buttons:
@@ -26,46 +24,12 @@ class ApiKeysWindow(QMainWindow):
         """
         super().__init__()
 
-        self.setWindowTitle("Vulnerability Scan Analyzer - Scans")
-        self.resize(1200, 800)
-
-        self.init_toolbar()
-
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
 
         self.init_scans_summary()
         self.init_api_keys_section()
-
-    def init_toolbar(self):
-        """
-        Creates a toolbar with actions to switch between pages.
-
-        This function should:
-        1. Create the main toolbar.
-        2. Create the following buttons:
-            a. 1. Scans -> opens ScansWindow.
-            b. 2. API Keys -> opens ApiKeysWindow.
-            c. 3. Cache -> opens CacheWindow.
-            d. 4. Create report -> opens CreateReportWindow.
-            e. 5. Exports -> opens ExportsWindow.
-        3. Add the buttons to the toolbar.
-        """
-        toolbar = QToolBar("Main Toolbar")
-        self.addToolBar(toolbar)
-
-        scans_action = QAction("1. Scans", self)
-        api_keys_action = QAction("2. API Keys", self)
-        cache_action = QAction("3. Cache", self)   
-        create_report_action = QAction("4. Create Report", self)        
-        exports_action = QAction("5. Exports", self)
-        
-        toolbar.addAction(scans_action)
-        toolbar.addAction(api_keys_action)
-        toolbar.addAction(cache_action)
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
 
     def init_scans_summary(self):
         """
@@ -127,8 +91,8 @@ class ApiKeysWindow(QMainWindow):
             """
             button_layout = QHBoxLayout()
 
-            self.add_scan_button = QPushButton("Add API Key")
-            button_layout.addWidget(self.add_scan_button)
+            self.add_api_key_button = QPushButton("Add API Key")
+            button_layout.addWidget(self.add_api_key_button)
 
             api_keys_layout.addLayout(button_layout)
 
@@ -147,28 +111,22 @@ class ApiKeysWindow(QMainWindow):
                 c. Status -> Resize to Contents.
             3. Add the label and table widget to the layout.
             """
-            self.scan_table = QTableWidget()
-            self.scan_table.setColumnCount(3)
+            self.api_keys_table = QTableWidget()
+            self.api_keys_table.setColumnCount(3)
 
-            self.scan_table.setHorizontalHeaderLabels([
+            self.api_keys_table.setHorizontalHeaderLabels([
                 "Key Name", "Key Value", "Status"
             ])
 
-            self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
+            self.api_keys_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-            header = self.scan_table.horizontalHeader()
+            header = self.api_keys_table.horizontalHeader()
             header.setSectionResizeMode(0, QHeaderView.Stretch)
             header.setSectionResizeMode(1, QHeaderView.Stretch)
             header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
 
-            api_keys_layout.addWidget(self.scan_table)
+            api_keys_layout.addWidget(self.api_keys_table)
 
         init_button_layout(self)
         init_api_keys_table(self)
         self.layout.addWidget(api_keys_group)
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = ApiKeysWindow()
-    window.show()
-    app.exec_()

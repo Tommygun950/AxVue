@@ -1,36 +1,25 @@
 """This file is responsible for the layout of th Create Report window."""
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QMainWindow, QVBoxLayout,
+    QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QPushButton,
     QToolBar, QAction, QLabel,
     QHBoxLayout, QGroupBox, QComboBox, QCheckBox
 )
-from PyQt5.QtCore import pyqtSignal
 
 class MainWindow(QMainWindow):
     """Main window for the create report page"""
-    exportTriggered = pyqtSignal(str, list, str, list)
-
     def __init__(self):
         """
         This function initializes the create report page & features.
 
         This function should:
-        1. Initialize the toolbar.
-        2. Create the vertical layout for all of the widgets.
-        3. Establish the following widgets:
+        1. Create the vertical layout for all of the widgets.
+        2. Establish the following widgets:
             a. List of selected NVD API keys.
             b. List of selected Scans.
             c. Export configuration box.
         """
         super().__init__()
-
-        self.setWindowTitle("Vulnerability Scan Analyzer")
-        self.resize(1200, 800)
-
-        self.nvd_api_key = ""
-
-        self.init_toolbar()
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -187,9 +176,3 @@ class MainWindow(QMainWindow):
         group_layout.addWidget(self.export_button)
 
         self.layout.addWidget(self.export_config_group)
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-    app.exec_()

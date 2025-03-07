@@ -1,13 +1,13 @@
 """
 This file is used to construct the Scans window in the GUI.
 """
-
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QMainWindow, QVBoxLayout,
+    QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QPushButton,
-    QToolBar, QAction, QLabel, QHBoxLayout,
-    QGroupBox
+    QLabel, QHBoxLayout, QGroupBox
 )
+from gui.scans_window.dialogs_scans import AddScanDialog
+from gui.scans_window.backend_scans import _add_scan
 
 class ScansWindow(QMainWindow):
     """Main window for Scans page."""
@@ -16,9 +16,8 @@ class ScansWindow(QMainWindow):
         This function initializes the scans page & features.
 
         This function should:
-        1. Initialize the toolbar.
-        2. create the vertical layout for all of the widgets.
-        3. Establish the following widgets:
+        1. create the vertical layout for all of the widgets.
+        2. Establish the following widgets:
             a. An excerpt/summery on this page.
             b. A section for scans with the following:
                 1. Table of scans.
@@ -26,46 +25,12 @@ class ScansWindow(QMainWindow):
         """
         super().__init__()
 
-        self.setWindowTitle("Vulnerability Scan Analyzer - Scans")
-        self.resize(1200, 800)
-
-        self.init_toolbar()
-
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
 
         self.init_scans_summary()
         self.init_scans_section()
-
-    def init_toolbar(self):
-        """
-        Creates a toolbar with actions to switch between pages.
-
-        This function should:
-        1. Create the main toolbar.
-        2. Create the following buttons:
-            a. 1. Scans -> opens ScansWindow.
-            b. 2. API Keys -> opens ApiKeysWindow.
-            c. 3. Cache -> opens CacheWindow.
-            d. 4. Create report -> opens CreateReportWindow.
-            e. 5. Exports -> opens ExportsWindow.
-        3. Add the buttons to the toolbar.
-        """
-        toolbar = QToolBar("Main Toolbar")
-        self.addToolBar(toolbar)
-
-        scans_action = QAction("1. Scans", self)
-        api_keys_action = QAction("2. API Keys", self)
-        cache_action = QAction("3. Cache", self)   
-        create_report_action = QAction("4. Create Report", self)        
-        exports_action = QAction("5. Exports", self)
-        
-        toolbar.addAction(scans_action)
-        toolbar.addAction(api_keys_action)
-        toolbar.addAction(cache_action)
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
 
     def init_scans_summary(self):
         """
@@ -135,6 +100,7 @@ class ScansWindow(QMainWindow):
             button_layout = QHBoxLayout()
 
             self.add_scan_button = QPushButton("Add Scan")
+            self.add_scan_button.clicked.connect(self.open_add_scan_dialog)
             button_layout.addWidget(self.add_scan_button)
 
             scans_section_layout.addLayout(button_layout)
@@ -189,8 +155,18 @@ class ScansWindow(QMainWindow):
 
         self.layout.addWidget(scans_group)
 
-if __name__ == "__main__":
-    app = QApplication([])
-    window = ScansWindow()
-    window.show()
-    app.exec_()
+    ### FUNCTIONS FOR OPENING DIALOGS FROM DIALOGS_SCANS.PY ###
+    def open_add_scan_dialog(self):
+        """
+        Opens the Add Scan dialog when the user clicks the "Add Scan" button.
+
+        This function should:
+        2. Execute the AddScanDialog.
+        3. If the dialog is accepted, retrieve the scan name and file path and call _add_scan.
+        """
+        dialog = AddScanDialog(self)
+        if dialog.exec_():
+            scan_name = dialog.scan_name_edit.text()
+            file_path = dialog.file_path_edit.text()
+
+            _add_scan(scan_name, file_path)
