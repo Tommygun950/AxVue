@@ -4,10 +4,10 @@ This file is used to construct the Scans window in the GUI.
 from PyQt5.QtWidgets import (
     QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QPushButton,
-    QLabel, QHBoxLayout, QGroupBox
+    QLabel, QHBoxLayout, QGroupBox, QTableWidgetItem
 )
 from gui.scans_window.dialogs_scans import AddScanDialog
-from gui.scans_window.backend_scans import _add_scan
+from gui.scans_window.backend_scans import _add_scan, _get_formatted_scan_data
 
 class ScansWindow(QMainWindow):
     """Main window for Scans page."""
@@ -22,6 +22,7 @@ class ScansWindow(QMainWindow):
             b. A section for scans with the following:
                 1. Table of scans.
                 b. A list of buttons:
+        3. Populate the scans table with the scan_data table.
         """
         super().__init__()
 
@@ -31,6 +32,8 @@ class ScansWindow(QMainWindow):
 
         self.init_scans_summary()
         self.init_scans_section()
+
+        self.populate_scans_table()
 
     def init_scans_summary(self):
         """
@@ -112,27 +115,25 @@ class ScansWindow(QMainWindow):
             This function should:
             1. Setup a table widget with the following columns:
                 a. Scan Name.
-                b. File Path.
-                c. Total CVE IDs.
-                d. Unique CVE IDs.
-                e. Cache.
-                f. Edit.
-                g. Delete.
+                b. Total CVE IDs.
+                c. Unique CVE IDs.
+                d. Cache.
+                e. Edit.
+                f. Delete.
             2. Ensure the resising of the columns do the following:
                 a. Scan name -> Stretch.
-                b. File Path -> Stretch.
-                c. Total CVE IDs -> Resize to Contents.
-                d. Unique CVE IDs -> Resize to Contents.
-                e. Cache -> Resize to Contents.
-                f. Edit -> Resize to Contents.
-                g. Delete -> Resize to Contents.
+                b. Total CVE IDs -> Resize to Contents.
+                c. Unique CVE IDs -> Resize to Contents.
+                d. Cache -> Resize to Contents.
+                e. Edit -> Resize to Contents.
+                f. Delete -> Resize to Contents.
             3. Add the label and table widget to the layout.
             """
             self.scan_table = QTableWidget()
-            self.scan_table.setColumnCount(8)
+            self.scan_table.setColumnCount(7)
 
             self.scan_table.setHorizontalHeaderLabels([
-                "Scan Name", "File Path", "Total CVE IDs",
+                "Scan Name", "Total CVE IDs",
                 "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
             ])
 
@@ -140,13 +141,12 @@ class ScansWindow(QMainWindow):
 
             header = self.scan_table.horizontalHeader()
             header.setSectionResizeMode(0, QHeaderView.Stretch)
-            header.setSectionResizeMode(1, QHeaderView.Stretch)
+            header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
             header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
             header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
             header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
             header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
             header.setSectionResizeMode(6, QHeaderView.ResizeToContents)
-            header.setSectionResizeMode(7, QHeaderView.ResizeToContents)
 
             scans_section_layout.addWidget(self.scan_table)
 
@@ -170,3 +170,57 @@ class ScansWindow(QMainWindow):
             file_path = dialog.file_path_edit.text()
 
             _add_scan(scan_name, file_path)
+            self.populate_scans_table()
+
+    ### FUNCTIONS FOR DISPLAYING BACKEND DATA ###
+    def populate_scans_table(self):
+        """
+        Loads scan data from the database and populates the scan table.
+        
+        This function should:
+        1. Retrieve formatted scan data from the backend.
+        2. Clear the GUI scans table.
+        3. Repopulate the scans table with the updated data.
+        4. Adds "Edit" and "Delete" buttons in their columns for each scan entry.
+        """ 
+        def add_edit_button():
+            """
+            Creates an Edit button given a scan entry.
+
+            This function should:
+            1. Create a QPushButton labeled "Edit".
+            2. If clicked call the edit_scan funciton.
+            3. Add the button in the correct column.
+            """
+            edit_button = QPushButton("Edit")
+            edit_button.clicked.connect(lambda checked, s_id=scan["id"]: self.edit_scan(s_id))
+            self.scan_table.setCellWidget(row, 5, edit_button)
+
+        def add_delete_button():
+            """
+            Creates an Delete button given a scan entry.
+
+            This function should:
+            1. Create a QPushButton labeled "Delete".
+            2. If clicked call the delete_scan funciton.
+            3. Add the button in the correct column.
+            """
+            delete_button = QPushButton("Delete")
+            delete_button.clicked.connect(lambda checked, s_id=scan["id"]: self.delete_scan(s_id))
+            self.scan_table.setCellWidget(row, 6, delete_button)
+
+        formatted_scans = _get_formatted_scan_data()
+        
+        self.scan_table.setRowCount(0)
+        
+        self.scan_table.setRowCount(len(formatted_scans))
+        
+        for row, scan in enumerate(formatted_scans):
+            self.scan_table.setItem(row, 0, QTableWidgetItem(scan["scan_name"]))
+            self.scan_table.setItem(row, 1, QTableWidgetItem(scan["total_cves"]))
+            self.scan_table.setItem(row, 2, QTableWidgetItem(scan["unique_cves"]))
+            self.scan_table.setItem(row, 3, QTableWidgetItem(scan["cache_enabled"]))
+            self.scan_table.setItem(row, 4, QTableWidgetItem(scan["cached_percentage"]))
+            
+            add_edit_button()
+            add_delete_button()

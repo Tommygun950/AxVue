@@ -64,10 +64,10 @@ def test_init_scans_content(scans_window):
     assert scans_window.add_scan_button.text() == "Add Scan" # Test 2c.
 
     assert scans_window.scan_table is not None # Test 2d.
-    assert scans_window.scan_table.columnCount() == 8 # Test 2e.
+    assert scans_window.scan_table.columnCount() == 7 # Test 2e.
 
     expected_headers = [
-        "Scan Name", "File Path", "Total CVE IDs",
+        "Scan Name", "Total CVE IDs",
         "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
     ]
     for i, header in enumerate(expected_headers):

@@ -10,7 +10,7 @@ from processing.database_processing import(
 
 def main():
     """
-    Main funcion of the application.
+    Main function of the application.
 
     This function should:
     1. Initialize the sqlite3 database.
