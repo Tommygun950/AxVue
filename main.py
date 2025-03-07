@@ -4,9 +4,10 @@ This is the main file for the project.
 from gui.gui import (
     MainAppWindow, QApplication
 )
-from processing.database_processing import(
+from processing.database_processing import (
     initialize_database
 )
+
 
 def main():
     """
@@ -22,6 +23,7 @@ def main():
     window = MainAppWindow()
     window.show()
     app.exec_()
+
 
 if __name__ == "__main__":
     main()

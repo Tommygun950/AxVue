@@ -99,6 +99,7 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
     7. cache_enabled -> true/false value whether the cves for that scan will be cached.
     8. cached_percentage -> a float that represents the total # of unique cves
        that are currently in the cves table.
+    9. selected -> true/false if the user selected the scan to use in the report.
     """
     create_scan_data_table_query = """
     CREATE TABLE IF NOT EXISTS scan_data (
@@ -108,7 +109,8 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
         total_vulnerabilities INTEGER,
         unique_cve_list TEXT,
         cache_enabled INTEGER NOT NULL DEFAULT 1,
-        cached_percentage FLOAT NOT NULL DEFAULT 0.0
+        cached_percentage FLOAT NOT NULL DEFAULT 0.0,
+        selected INTEGER NOT NULL DEFAULT 0
     )
     """
     cursor.execute(create_scan_data_table_query)
