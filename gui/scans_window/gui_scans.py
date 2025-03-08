@@ -17,7 +17,9 @@ from gui.scans_window.backend_scans import (
     _update_scan_selected_status
 )
 from gui.scans_window.style_scans import (
-    integrate_all_styling
+    integrate_window_styling,
+    integrate_summary_group_styling,
+    integrate_scans_group_styling
 )
 
 
@@ -35,6 +37,10 @@ class ScansWindow(QMainWindow):
                 1. Table of scans.
                 b. A list of buttons:
         3. Populate the scans table with the scan_data table.
+        4. Initialize the styling for the following:
+            a. Scans Window.
+            b. Scans Summary Group.
+            c. Scans Group.
         """
         super().__init__()
 
@@ -45,9 +51,14 @@ class ScansWindow(QMainWindow):
         self.init_scans_summary()
         self.init_scans_section()
 
-        integrate_all_styling(self)
+        integrate_window_styling(self)
+
+        integrate_summary_group_styling(self)
+        integrate_scans_group_styling(self)  # First call to color buttons.
 
         self.populate_scans_table()
+
+        integrate_scans_group_styling(self)  # Second call to center text.
 
     def init_scans_summary(self):
         """
@@ -63,26 +74,8 @@ class ScansWindow(QMainWindow):
         group_layout = QVBoxLayout(self.scans_summary_group)
 
         summary_text = (
-            "On this page, you have the ability to add and manage your csv "
-            "scan exports. To add a scan to this list, select the 'Add Scan' "
-            "button at the bottom of this page. The only information you need "
-            "to enter is your desired name for the scan data and the filepath "
-            "to your csv export. "
-            "Important features:\n"
-            " 1. This program will automatically calculate the number of "
-            "total and unique cve ids.\n"
-            " 2. The cached percentage is how much of your scan data is "
-            " already stored within the cve CVSS metric database, which saves "
-            "time when creating a report.\n"
-            " 3. If you're concerned with caching critical vulnerability data "
-            "to your system, you can either enable or disable caching for "
-            "any new vulnerabilities within your csv scan file.\n"
-            " 4. After adding a scan to the table, you may delete or edit "
-            "any of the informaiton by selecting the desired row's 'Edit' "
-            "or 'Delete' button.\n"
-            "To create a report with your desired scans, click the checkmark "
-            "to the left of the scan(s) and they will popup within the "
-            "'Create Report' window ready for export. "
+            "Step 1: Add your CSV scan exports to the table and "
+            "select the checkbox for the scans you want in your report. "
         )
 
         summary_label = QLabel(summary_text)
@@ -103,8 +96,8 @@ class ScansWindow(QMainWindow):
         3. Add The QVBoxLayout to the QGroupBox.
         4. Add QGroupBox to the main layout for the page.
         """
-        scans_group = QGroupBox("Scans")
-        scans_section_layout = QVBoxLayout(scans_group)
+        self.scans_group = QGroupBox("Scans")
+        scans_section_layout = QVBoxLayout(self.scans_group)
 
         def init_button_layout():
             """
@@ -155,6 +148,8 @@ class ScansWindow(QMainWindow):
                 "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
             ])
 
+            self.scan_table.verticalHeader().setVisible(False)
+
             self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
             header = self.scan_table.horizontalHeader()
@@ -174,7 +169,7 @@ class ScansWindow(QMainWindow):
         init_button_layout()
         init_scans_table()
 
-        self.layout.addWidget(scans_group)
+        self.layout.addWidget(self.scans_group)
 
     # FUNCTIONS FOR OPENING DIALOGS FROM DIALOGS_SCANS.PY #
     def open_add_scan_dialog(self):
@@ -250,6 +245,7 @@ class ScansWindow(QMainWindow):
         2. Clear the GUI scans table.
         3. Repopulate the scans table with the updated data.
         4. Adds "Edit" and "Delete" buttons in their columns for scan entries.
+        5. Recall integrate_scan_group_styling to prevent table changes.
         """
         all_scans = _get_all_scan_data()
 
@@ -301,6 +297,8 @@ class ScansWindow(QMainWindow):
                 lambda checked, s_id=scan["id"]: self.delete_scan(s_id)
             )
             self.scan_table.setCellWidget(row, 7, delete_button)
+
+        integrate_scans_group_styling(self)
 
     # FUNCTIONS FOR ACTION BUTTONS IN SCAN TABLE #
     def edit_scan(self, scan_id):

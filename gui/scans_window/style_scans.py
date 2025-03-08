@@ -2,105 +2,74 @@
 This file contains styling code for the Scans window.
 """
 from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import QTableWidget, QGroupBox
+from PyQt5.QtWidgets import QTableWidget
 from PyQt5.QtCore import Qt
 
+# FUNCTIONS FOR ESTABLISHING STYLE #
 
-def apply_scans_window_style(window):
+
+def style_scans_window(window):
     """
     Applies styling to the entire Scans window.
 
     This function should:
-    1. Set the background color of the main window to #e7e2f3.
-    2. Call helper functions to apply specific styles to each component.
-
-    Parameters:
-    window (ScansWindow): The main ScansWindow instance to style.
+    1. Set the color of the window.
+    2. Set the auto fill of the background to true.
+    3. Apply the pallete style.
     """
-    # Set window background color
     window_palette = window.central_widget.palette()
     window_palette.setColor(QPalette.Window, QColor("#e7e2f3"))
     window.central_widget.setAutoFillBackground(True)
     window.central_widget.setPalette(window_palette)
 
-    # Apply styles to various components
-    style_scans_summary_group(window.scans_summary_group)
-    style_scan_table(window.scan_table)
-    style_add_scan_button(window.add_scan_button)
 
-
-def style_scans_summary_group(group_box):
+def style_group_box(group_box):
     """
-    Applies styling to the Scans Summary group box.
+    Applies styling to a given QGroupBox.
 
     This function should:
-    1. Set the background color of the group box to #2d3c67.
-    2. Set the title text color to #e7e2f3.
-    3. Make the title text bold.
-    4. Set the text color of all child QLabels to #e7e2f3.
-
-    Parameters:
-    group_box (QGroupBox): The Scans Summary group box to style.
+    1. Format The QGroupBox title.
+    2. Format the QGroupBox content.
+    3. Format the content/QLabel words.
     """
-    group_box.setStyleSheet("""
+    style = """
+        QGroupBox::title {
+            background-color: #2d3c67;
+            color: #e7e2f3;
+
+            border: 1px solid #1a2233;
+            border-radius: 8px;
+
+            margin-bottom: 1px;
+            padding: 2px 15px;
+
+            subcontrol-origin: margin;
+            subcontrol-position: top center;
+        }
         QGroupBox {
             background-color: #2d3c67;
             color: #e7e2f3;
+
+            font-weight: bold;
+            font-size: 14pt;
+
             border: 1px solid #1a2233;
             border-radius: 5px;
+
             margin-top: 20px;
             padding-top: 10px;
-            font-weight: bold;
-            font-size: 14pt;
         }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top center;
-            padding: 2px 15px;
-            background-color: #2d3c67;
-            border: 1px solid black;
-            border-radius: 8px;
-            margin-bottom: 1px;
-        }
-        QLabel {
+        QGroupBox QLabel {
             color: #e7e2f3;
-        }
-    """)
 
-
-def style_scans_group(group_box):
-    """
-    Applies styling to the Scans group box.
-
-    This function should:
-    1. Set the background color of the group box to #688cca.
-    2. Set the title text color to #e7e2f3.
-    3. Make the title text bold.
-
-    Parameters:
-    group_box (QGroupBox): The Scans group box to style.
-    """
-    group_box.setStyleSheet("""
-        QGroupBox {
-            background-color: #2d3c67;
-            color: #e7e2f3;
-            border: 1px solid #4a6790;
-            border-radius: 5px;
-            margin-top: 20px;
-            padding-top: 10px;
             font-weight: bold;
-            font-size: 14pt;
+            font-size: 10pt;
+
+            qproperty-alignment: 'AlignCenter';
         }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top center;
-            padding: 2px 15px;
-            background-color: #2d3c67;
-            border: 1px solid black;
-            border-radius: 8px;
-            margin-bottom: 1px;
-        }
-    """)
+    """
+
+    group_box.setStyleSheet(style)
 
 
 def style_add_scan_button(button):
@@ -108,26 +77,25 @@ def style_add_scan_button(button):
     Applies styling to the Add Scan button.
 
     This function should:
-    1. Set the background color of the button to #88E788.
-    2. Set the text color to white.
-    3. Make the text bold.
-    4. Add visual improvements for hover and pressed states.
-
-    Parameters:
-    button (QPushButton): The Add Scan button to style.
+    1. Configure the style of the button when:
+        a. Idle.
+        b. Hovered over.
+        c. Pressed.
     """
-    # Style button
     button.setStyleSheet("""
         QPushButton {
-            background-color: #88E788;
+            background-color: #56d156;
             color: white;
+
             font-weight: bold;
+
             border: none;
             border-radius: 4px;
+
             padding: 6px 12px;
         }
         QPushButton:hover {
-            background-color: #6BC96B;
+            background-color: #2ade2a;
         }
         QPushButton:pressed {
             background-color: #5AAF5A;
@@ -140,42 +108,41 @@ def style_scan_table(table):
     Applies styling to the Scans table.
 
     This function should:
-    1. Style the header with:
-       a. Background color #688cca.
-       b. Text color #e7e2f3.
-       c. Bold font.
-    2. Style the table cells with:
-       a. Background color #e7e2f3.
-       b. Text color #2d3c67.
-       c. Centered text alignment.
-    3. Apply additional styling for visual separators and selection states.
-
-    Parameters:
-    table (QTableWidget): The Scans table to style.
+    1. Style the following:
+        a. The QTableWidget.
+        b. The items in the QTableWidget.
+        c. A selected item.
+        d. The column headers.
+        e. The QCheckBox.
+        f. The outerspacing of the QCheckBox.
+        g. The inner contents of the QCheckBox.
     """
     table.setStyleSheet("""
         QTableWidget {
             background-color: #e7e2f3;
-            alternate-background-color: #d7d2e3;
-            gridline-color: #b8b2d3;
-            border: 1px solid #b8b2d3;
+
+            border: 1x solid #2d3c67;
             border-radius: 4px;
         }
         QTableWidget::item {
-            color: #2d3c67;
-            padding: 4px;
+            padding: 2px;
+
             text-align: center;
         }
         QTableWidget::item:selected {
-            background-color: #a0b8e0;
+            background-color: #ccd9f0;
             color: #2d3c67;
         }
         QHeaderView::section {
             background-color: #688cca;
             color: #e7e2f3;
+
             font-weight: bold;
-            padding: 5px;
+
             border: 1px solid #5a7db0;
+
+            padding: 5px;
+
             text-align: center;
         }
         QCheckBox {
@@ -183,18 +150,14 @@ def style_scan_table(table):
             padding: 0px;
         }
         QCheckBox::indicator {
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
         }
     """)
 
-    # Enable alternating row colors for better readability
     table.setAlternatingRowColors(True)
-
-    # Set selection behavior
     table.setSelectionBehavior(QTableWidget.SelectRows)
 
-    # Set table header font
     header = table.horizontalHeader()
     font = header.font()
     font.setBold(True)
@@ -211,31 +174,26 @@ def style_scan_table(table):
 def style_table_buttons(table):
     """
     Applies styling to the Edit and Delete buttons in the table.
-    
+
     This function should:
-    1. Style the Edit buttons with:
-       a. Background color #688cca.
-       b. Text color white.
-    2. Style the Delete buttons with:
-       a. Background color #e74c3c.
-       b. Text color white.
-    
-    Parameters:
-    table (QTableWidget): The table containing the buttons to style.
+    1. Style the Edit buttons.
+    2. Style the Delete buttons.
     """
     rows = table.rowCount()
-
     for row in range(rows):
-        # Style Edit button
         edit_button = table.cellWidget(row, 6)
         if edit_button:
             edit_button.setStyleSheet("""
                 QPushButton {
                     background-color: #688cca;
                     color: white;
+
                     border: none;
                     border-radius: 4px;
+
                     padding: 5px;
+
+                    font-size: 15px;
                 }
                 QPushButton:hover {
                     background-color: #5a7db0;
@@ -245,16 +203,19 @@ def style_table_buttons(table):
                 }
             """)
 
-        # Style Delete button
         delete_button = table.cellWidget(row, 7)
         if delete_button:
             delete_button.setStyleSheet("""
                 QPushButton {
                     background-color: #e74c3c;
                     color: white;
+
                     border: none;
                     border-radius: 4px;
+
                     padding: 5px;
+
+                    font-size: 15px;
                 }
                 QPushButton:hover {
                     background-color: #c94032;
@@ -264,34 +225,43 @@ def style_table_buttons(table):
                 }
             """)
 
+# FUNCTIONS FOR INTEGRATING STYLE INTO WINDOW #
 
-def integrate_all_styling(window):
+
+def integrate_window_styling(window):
     """
-    Integrates all styling functions to apply a cohesive look to the Scans window.
+    Integrates the style for the Scans window.
 
     This function should:
-    1. Apply the window background style.
-    2. Style all group boxes.
-    3. Style the scans table.
-    4. Style the Add Scan button.
-    5. Set up a mechanism to style table buttons whenever the table is updated.
-
-    Parameters:
-    window (ScansWindow): The ScansWindow instance to style.
+    1. Style the overall window.
     """
-    # Apply main styles
-    apply_scans_window_style(window)
+    style_scans_window(window)
 
-    # Style all group boxes (we need to get all group boxes from the layout)
-    for i in range(window.layout.count()):
-        widget = window.layout.itemAt(i).widget()
-        if isinstance(widget, QGroupBox):
-            if widget.title() == "Scans Summary":
-                style_scans_summary_group(widget)
-            elif widget.title() == "Scans":
-                style_scans_group(widget)
 
-    # Connect table population to button styling
+def integrate_summary_group_styling(window):
+    """
+    Integrates all styling for the summary group.
+
+    This function should:
+    1. Style all of the Scans Summary QGroupBox.
+    """
+    style_group_box(window.scans_summary_group)
+
+
+def integrate_scans_group_styling(window):
+    """
+    Integrates all styling for the scans group.
+    This function styles:
+      1. The scans group box.
+      2. The Add Scan button.
+      3. The scan table.
+      4. The buttons in the table.
+    """
+    style_group_box(window.scans_group)
+
+    style_add_scan_button(window.add_scan_button)
+    style_scan_table(window.scan_table)
+
     original_populate_function = window.populate_scans_table
 
     def styled_populate_function(*args, **kwargs):
