@@ -7,7 +7,7 @@ import sqlite3
 def initialize_database(db_file: str = "vuln_data.db"):
     """
     Creates the entire sqlite3 db and tables if they don't exist yet.
-    
+
     This includes:
     1. Initializing the "vuln_data.db".
     2. Initializing the table for cve data.

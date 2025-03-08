@@ -26,12 +26,31 @@ def _add_scan(
         d. cached_percentage.
     3. Take the given and processed values and add the scan to the db.
     """
-    if scan_name == "" or file_path == "":
-        error_dialog = GeneralErrorDialog(
-            "Scan name or file path cannot be empty."
-        )
-        error_dialog.exec_()
-        return (False, "Empty Scan Name and/or File Path.")
+    def check_for_errors():
+        """
+        Check for errors with the user's entered in data.
+
+        This function should:
+        1. Ensure scan_name and file_path are not empty.
+        2. Ensure the file is in csv format.
+        """
+        if scan_name == "" or file_path == "":
+            error_dialog = GeneralErrorDialog(
+                "Scan name or file path cannot be empty."
+            )
+            error_dialog.exec_()
+            return (False, "Empty Field")
+
+        if file_path[-4:].lower() != ".csv":
+            error_dialog = GeneralErrorDialog(
+                "Invalid File Format: File must be a CSV."
+            )
+            error_dialog.exec_()
+            return (False, "Invalid File Format")
+
+    success, message = check_for_errors()
+    if success is False:
+        return (success, message)
 
     cve_id_list, cve_id_set = return_cve_ids_from_csv(file_path)
     total_vulnerabilities = len(cve_id_list)
