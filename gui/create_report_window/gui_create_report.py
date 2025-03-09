@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QGroupBox, QComboBox, QCheckBox
 )
 
-class MainWindow(QMainWindow):
+
+class CreateReportWindow(QMainWindow):
     """Main window for the create report page"""
     def __init__(self):
         """
@@ -48,10 +49,10 @@ class MainWindow(QMainWindow):
 
         scans_action = QAction("1. Scans", self)
         api_keys_action = QAction("2. API Keys", self)
-        cache_action = QAction("3. Cache", self)   
-        create_report_action = QAction("4. Create Report", self)        
+        cache_action = QAction("3. Cache", self)
+        create_report_action = QAction("4. Create Report", self)
         exports_action = QAction("5. Exports", self)
-        
+
         toolbar.addAction(scans_action)
         toolbar.addAction(api_keys_action)
         toolbar.addAction(cache_action)
@@ -166,7 +167,11 @@ class MainWindow(QMainWindow):
 
         group_layout.addWidget(QLabel("Pages to Export:"))
         self.page_checkboxes = {}
-        for page in ["KEV Catalog Comparison", "Base Metrics", "Temporal Metrics"]:
+        for page in [
+            "KEV Catalog Comparison",
+            "Base Metrics",
+            "Temporal Metrics"
+        ]:
             checkbox = QCheckBox(page)
             checkbox.setChecked(True)
             self.page_checkboxes[page] = checkbox

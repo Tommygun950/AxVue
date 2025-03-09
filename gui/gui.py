@@ -3,11 +3,12 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QStackedWidget, QToolBar, QAction
 )
 
-from .create_report_window.gui_create_report import MainWindow as CreateReportWindow
+from .create_report_window.gui_create_report import CreateReportWindow
 from .exports_window.gui_exports import ExportsWindow
 from .scans_window.gui_scans import ScansWindow
 from .api_keys_window.gui_api_keys import ApiKeysWindow
 from .cache_window.gui_cache import CacheWindow
+
 
 class MainAppWindow(QMainWindow):
     """
@@ -66,25 +67,36 @@ class MainAppWindow(QMainWindow):
         self.addToolBar(toolbar)
 
         scans_action = QAction("1. Scans", self)
-        scans_action.triggered.connect(lambda: self.stacked_widget.setCurrentIndex(0))
+        scans_action.triggered.connect(
+            lambda: self.stacked_widget.setCurrentIndex(0)
+        )
 
         api_keys_action = QAction("2. API Keys", self)
-        api_keys_action.triggered.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+        api_keys_action.triggered.connect(
+            lambda: self.stacked_widget.setCurrentIndex(1)
+        )
 
         cache_action = QAction("3. Cache", self)
-        cache_action.triggered.connect(lambda: self.stacked_widget.setCurrentIndex(2))
-   
+        cache_action.triggered.connect(
+            lambda: self.stacked_widget.setCurrentIndex(2)
+        )
+
         create_report_action = QAction("4. Create Report", self)
-        create_report_action.triggered.connect(lambda: self.stacked_widget.setCurrentIndex(3))
-        
+        create_report_action.triggered.connect(
+            lambda: self.stacked_widget.setCurrentIndex(3)
+        )
+
         exports_action = QAction("5. Exports", self)
-        exports_action.triggered.connect(lambda: self.stacked_widget.setCurrentIndex(4))
-        
+        exports_action.triggered.connect(
+            lambda: self.stacked_widget.setCurrentIndex(4)
+        )
+
         toolbar.addAction(scans_action)
         toolbar.addAction(api_keys_action)
         toolbar.addAction(cache_action)
         toolbar.addAction(create_report_action)
         toolbar.addAction(exports_action)
+
 
 if __name__ == "__main__":
     app = QApplication([])

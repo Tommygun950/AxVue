@@ -1,7 +1,6 @@
 """
 Unit tests for cve_processing.py module
 """
-import csv
 import sqlite3
 import requests
 import pytest
@@ -14,16 +13,21 @@ from processing.cve_processing import (
     process_single_cve
 )
 
+
 class FakeResponse:
     """Creates a fake NVD API response to subvert real api use."""
     def __init__(self, status_code, json_data=None):
         self.status_code = status_code
         self._json_data = json_data
+
     def json(self):
         """Returns a 200 response with json data."""
         return self._json_data
 
-### FIXTURES FOR SQLITE3 DB ###
+
+# FIXTURES FOR SQLITE3 DB #
+
+
 @pytest.fixture
 def test_db_path(tmp_path):
     """Create a test database with required schema."""
@@ -52,7 +56,10 @@ def test_db_path(tmp_path):
 
     return str(db_file)
 
-### FIXTURES FOR METRIC JSON DATA ###
+
+# FIXTURES FOR METRIC JSON DATA #
+
+
 @pytest.fixture
 def v3_metrics_data():
     """Sample CVSS v3 metrics data."""
@@ -73,6 +80,7 @@ def v3_metrics_data():
         }
     ]
 
+
 @pytest.fixture
 def v2_metrics_data():
     """Sample CVSS v2 metrics data."""
@@ -82,16 +90,17 @@ def v2_metrics_data():
             "cvssData": {
                 "baseScore": 7.5,
                 "accessVector": "NETWORK",
-                "accessComplexity": "LOW", 
+                "accessComplexity": "LOW",
                 "authentication": "NONE",
                 "confidentialityImpact": "PARTIAL",
-                "integrityImpact": "PARTIAL", 
+                "integrityImpact": "PARTIAL",
                 "availabilityImpact": "PARTIAL"
             },
             "baseSeverity": "HIGH",
             "userInteractionRequired": True
         }
     ]
+
 
 @pytest.fixture
 def nvd_api_response():
@@ -125,10 +134,12 @@ def nvd_api_response():
     }
 
 
+# TEST FUNCTIONS #
+
 def test_map_cvss_v2_impact():
     """
     Test mapping CVSS v2 impact values to v3 equivalents.
-    
+
     The function tests the following:
     1. Turns v2 terms into v3 terms.
         a. NONE -> NONE (case insensitive)
@@ -136,14 +147,15 @@ def test_map_cvss_v2_impact():
         c. COMPLETE -> HIGH (case insensitive)
         d. UNKOWN -> UNKOWN
     """
-    assert map_cvss_v2_impact("NONE") == "NONE" # Test 1a.
-    assert map_cvss_v2_impact("none") == "NONE" # Test 1a.
-    assert map_cvss_v2_impact("PARTIAL") == "LOW" # Test 1b.
-    assert map_cvss_v2_impact("partial") == "LOW" # Test 1b.
-    assert map_cvss_v2_impact("COMPLETE") == "HIGH" # Test 1c.
-    assert map_cvss_v2_impact("complete") == "HIGH" # Test 1c.
+    assert map_cvss_v2_impact("NONE") == "NONE"  # Test 1a.
+    assert map_cvss_v2_impact("none") == "NONE"  # Test 1a.
+    assert map_cvss_v2_impact("PARTIAL") == "LOW"  # Test 1b.
+    assert map_cvss_v2_impact("partial") == "LOW"  # Test 1b.
+    assert map_cvss_v2_impact("COMPLETE") == "HIGH"  # Test 1c.
+    assert map_cvss_v2_impact("complete") == "HIGH"  # Test 1c.
 
-    assert map_cvss_v2_impact("UNKNOWN") == "UNKNOWN" # Test 1d.
+    assert map_cvss_v2_impact("UNKNOWN") == "UNKNOWN"  # Test 1d.
+
 
 def test_map_cvss_v2_user_interaction():
     """
@@ -154,20 +166,23 @@ def test_map_cvss_v2_user_interaction():
     2. Converts v2 values to v3 if they're numeric.
     3. Converts v2 values to v3 if they're strings.
     """
-    assert map_cvss_v2_user_interaction(True) == "Required" # Test 1.
-    assert map_cvss_v2_user_interaction(False) == "None" # Test 1.
+    assert map_cvss_v2_user_interaction(True) == "Required"  # Test 1.
+    assert map_cvss_v2_user_interaction(False) == "None"  # Test 1.
 
-    assert map_cvss_v2_user_interaction(1) == "Required" # Test 2.
-    assert map_cvss_v2_user_interaction(0) == "None" # Test 2.
+    assert map_cvss_v2_user_interaction(1) == "Required"  # Test 2.
+    assert map_cvss_v2_user_interaction(0) == "None"  # Test 2.
 
-    assert map_cvss_v2_user_interaction("required") == "Required" # Test 3.
-    assert map_cvss_v2_user_interaction("yes") == "Required" # Test 3.
-    assert map_cvss_v2_user_interaction("true") == "Required" # Test 3.
-    assert map_cvss_v2_user_interaction("REQUIRED") == "Required" # Test 3.
-    assert map_cvss_v2_user_interaction("no") == "None" # Test 3.
-    assert map_cvss_v2_user_interaction("none") == "None" # Test 3.
+    assert map_cvss_v2_user_interaction("required") == "Required"  # Test 3.
+    assert map_cvss_v2_user_interaction("yes") == "Required"  # Test 3.
+    assert map_cvss_v2_user_interaction("true") == "Required"  # Test 3.
+    assert map_cvss_v2_user_interaction("REQUIRED") == "Required"  # Test 3.
+    assert map_cvss_v2_user_interaction("no") == "None"  # Test 3.
+    assert map_cvss_v2_user_interaction("none") == "None"  # Test 3.
 
-def test_get_v3_metrics_primary(v3_metrics_data):
+
+def test_get_v3_metrics_primary(
+        v3_metrics_data
+):
     """
     Test extracting CVSS v3 metrics with primary metric present.
 
@@ -180,21 +195,24 @@ def test_get_v3_metrics_primary(v3_metrics_data):
     6. Ensure user itneraction is returned correctly.
     7. Ensure confidentiality impact is returned correctly.
     8. Ensure integrity impact is returned correctly.
-    9. Ensure availability is returned correctly. 
+    9. Ensure availability is returned correctly.
     """
     result = get_v3_metrics(v3_metrics_data)
 
-    assert result[0] == 8.8 # Test 1.
-    assert result[1] == "HIGH" # Test 2.
-    assert result[2] == "NETWORK" # Test 3.
-    assert result[3] == "LOW" # Test 4.
-    assert result[4] == "NONE" # Test 5.
-    assert result[5] == "NONE" # Test 6.
-    assert result[6] == "HIGH" # Test 7.
-    assert result[7] == "HIGH" # Test 8.
-    assert result [8] == "HIGH" # Test 9.
+    assert result[0] == 8.8  # Test 1.
+    assert result[1] == "HIGH"  # Test 2.
+    assert result[2] == "NETWORK"  # Test 3.
+    assert result[3] == "LOW"  # Test 4.
+    assert result[4] == "NONE"  # Test 5.
+    assert result[5] == "NONE"  # Test 6.
+    assert result[6] == "HIGH"  # Test 7.
+    assert result[7] == "HIGH"  # Test 8.
+    assert result[8] == "HIGH"  # Test 9.
 
-def test_get_v2_metrics_primary(v2_metrics_data):
+
+def test_get_v2_metrics_primary(
+        v2_metrics_data
+):
     """
     Test extracting CVSS v2 metrics with primary metric present
 
@@ -207,21 +225,24 @@ def test_get_v2_metrics_primary(v2_metrics_data):
     6. Ensure user itneraction is returned correctly.
     7. Ensure confidentiality impact is returned correctly.
     8. Ensure integrity impact is returned correctly.
-    9. Ensure availability is returned correctly. 
+    9. Ensure availability is returned correctly.
     """
     result = get_v2_metrics(v2_metrics_data)
 
-    assert result[0] == 7.5 # Test 1.
-    assert result[1] == "HIGH" # Test 2.
-    assert result[2] == "NETWORK" # Test 3.
-    assert result[3] == "LOW" # Test 4.
-    assert result[4] == "NONE" # Test 5.
-    assert result[5] == "Required" # Test 6.
-    assert result[6] == "LOW" # Test 7.
-    assert result[7] == "LOW" # Test 8.
-    assert result [8] == "LOW" # Test 9.
+    assert result[0] == 7.5  # Test 1.
+    assert result[1] == "HIGH"  # Test 2.
+    assert result[2] == "NETWORK"  # Test 3.
+    assert result[3] == "LOW"  # Test 4.
+    assert result[4] == "NONE"  # Test 5.
+    assert result[5] == "Required"  # Test 6.
+    assert result[6] == "LOW"  # Test 7.
+    assert result[7] == "LOW"  # Test 8.
+    assert result[8] == "LOW"  # Test 9.
 
-def test_check_for_cve_record_not_found(test_db_path):
+
+def test_check_for_cve_record_not_found(
+        test_db_path
+):
     """
     Test that check_for_cve_record returns False when no record exists.
 
@@ -229,11 +250,14 @@ def test_check_for_cve_record_not_found(test_db_path):
     1. Given a cve id not in the cves table, return a false value.
     """
     result = check_for_cve_record("CVE-NOT-FOUND", test_db_path)
-    assert result is False # Test 1.
+    assert result is False  # Test 1.
 
-def test_check_for_cve_record_valid_record(test_db_path):
+
+def test_check_for_cve_record_valid_record(
+        test_db_path
+):
     """
-    Test that check_for_cve_record returns True when a record exists 
+    Test that check_for_cve_record returns True when a record exists
     with valid metric values.
 
     The function tests the following:
@@ -241,7 +265,9 @@ def test_check_for_cve_record_valid_record(test_db_path):
     """
     conn = sqlite3.connect(test_db_path)
     cursor = conn.cursor()
-    valid_values = (7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW")
+    valid_values = (
+        7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW"
+    )
     cursor.execute("""
         INSERT OR REPLACE INTO cves (
             cve_id, base_score, severity, attack_vector, attack_complexity,
@@ -253,9 +279,12 @@ def test_check_for_cve_record_valid_record(test_db_path):
     conn.close()
 
     result = check_for_cve_record("CVE-VALID", test_db_path)
-    assert result is True # Test 1.
+    assert result is True  # Test 1.
 
-def test_process_single_cve_cached(test_db_path):
+
+def test_process_single_cve_cached(
+        test_db_path
+):
     """
     Test that process_single_cve returns (True, "cached") when the CVE record
     already exists in the database with valid metric values.
@@ -263,7 +292,9 @@ def test_process_single_cve_cached(test_db_path):
     The function tests the following:
     1. If a cve already exists with non-NULL values, return (True, "cached").
     """
-    valid_values = (7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW")
+    valid_values = (
+        7.5, "HIGH", "NETWORK", "LOW", "NONE", "Required", "LOW", "LOW", "LOW"
+    )
 
     conn = sqlite3.connect(test_db_path)
     cursor = conn.cursor()
@@ -280,9 +311,14 @@ def test_process_single_cve_cached(test_db_path):
     conn.close()
 
     result = process_single_cve("CVE-ALREADY", "fake-api-key", test_db_path)
-    assert result == (True, "cached") # Test 1.
+    assert result == (True, "cached")  # Test 1.
 
-def test_process_single_cve_success(monkeypatch, test_db_path, nvd_api_response):
+
+def test_process_single_cve_success(
+        monkeypatch,
+        test_db_path,
+        nvd_api_response
+):
     """
     Test successful processing of a single CVE.
 
@@ -297,7 +333,7 @@ def test_process_single_cve_success(monkeypatch, test_db_path, nvd_api_response)
 
     result = process_single_cve("CVE-2021-1234", "fake-api-key", test_db_path)
 
-    assert result == (True, "success") # Test 1.
+    assert result == (True, "success")  # Test 1.
 
     conn = sqlite3.connect(test_db_path)
     cursor = conn.cursor()
@@ -305,13 +341,17 @@ def test_process_single_cve_success(monkeypatch, test_db_path, nvd_api_response)
     entry = cursor.fetchone()
     conn.close()
 
-    assert entry is not None # Test 2.
+    assert entry is not None  # Test 2.
 
-    assert entry[0] == "CVE-2021-1234" # Test 3.
-    assert entry[1] == 8.8 # Test 3.
-    assert entry[2] == "HIGH" # Test 3.
+    assert entry[0] == "CVE-2021-1234"  # Test 3.
+    assert entry[1] == 8.8  # Test 3.
+    assert entry[2] == "HIGH"  # Test 3.
 
-def test_process_single_cve_timeout(monkeypatch, test_db_path):
+
+def test_process_single_cve_timeout(
+        monkeypatch,
+        test_db_path
+):
     """
     Test handling of request timeout.
 
@@ -320,30 +360,38 @@ def test_process_single_cve_timeout(monkeypatch, test_db_path):
     2. Ensure a (False, "timeout") tuple is retuned in case of timeout.
     """
     def fake_get(*args, **kwargs):
-        raise requests.exceptions.Timeout() # Test 1.
+        raise requests.exceptions.Timeout()  # Test 1.
     monkeypatch.setattr(requests, "get", fake_get)
 
     result = process_single_cve("CVE-2021-1234", "fake-api-key", test_db_path)
 
-    assert result == (False, "timeout") # Test 2.
+    assert result == (False, "timeout")  # Test 2.
 
-def test_process_single_cve_request_error(monkeypatch, test_db_path):
+
+def test_process_single_cve_request_error(
+        monkeypatch,
+        test_db_path
+):
     """
     Test handling of general request error.
 
     The function tests the following:
     1. If a non-200 code is returned, ensure a request exception is raised.
-    2. If a non-200 code is returned, ensure a (False, "error") tuple is returned.
+    2. If a non-200 code is returned, ensure a tuple is returned.
     """
     def fake_get(*args, **kwargs):
-        raise requests.exceptions.RequestException() # Test 1.
+        raise requests.exceptions.RequestException()  # Test 1.
     monkeypatch.setattr(requests, "get", fake_get)
 
     result = process_single_cve("CVE-2021-1234", "fake-api-key", test_db_path)
 
-    assert result == (False, "error") # Test 2.
+    assert result == (False, "error")  # Test 2.
 
-def test_process_single_cve_error_status(monkeypatch, test_db_path):
+
+def test_process_single_cve_error_status(
+        monkeypatch,
+        test_db_path
+):
     """
     Test handling of 404 responses.
 
@@ -356,9 +404,14 @@ def test_process_single_cve_error_status(monkeypatch, test_db_path):
 
     result = process_single_cve("CVE-2021-1234", "fake-api-key", test_db_path)
 
-    assert result == (False, 404) # Test 1.
+    assert result == (False, 404)  # Test 1.
 
-def test_process_single_cve_v3_metrics(monkeypatch, test_db_path, nvd_api_response):
+
+def test_process_single_cve_v3_metrics(
+        monkeypatch,
+        test_db_path,
+        nvd_api_response
+):
     """
     Test processing a CVE with v3.1 metrics.
 
@@ -380,16 +433,20 @@ def test_process_single_cve_v3_metrics(monkeypatch, test_db_path, nvd_api_respon
     entry = cursor.fetchone()
     conn.close()
 
-    assert entry is not None # Test 1.
+    assert entry is not None  # Test 1.
 
-    assert result == (True, "success") # Test 2.
+    assert result == (True, "success")  # Test 2.
 
-    assert entry[0] == "CVE-2021-1234" # Test 3.
-    assert entry[1] == 8.8 # Test 3.
-    assert entry[2] == "HIGH" # Test 3.
-    assert entry[3] == "NETWORK" # Test 3.
+    assert entry[0] == "CVE-2021-1234"  # Test 3.
+    assert entry[1] == 8.8  # Test 3.
+    assert entry[2] == "HIGH"  # Test 3.
+    assert entry[3] == "NETWORK"  # Test 3.
 
-def test_process_single_cve_v3_0_metrics(monkeypatch, test_db_path):
+
+def test_process_single_cve_v3_0_metrics(
+        monkeypatch,
+        test_db_path
+):
     """
     Test processing a CVE with v3.0 metrics.
 
@@ -438,16 +495,20 @@ def test_process_single_cve_v3_0_metrics(monkeypatch, test_db_path):
     entry = cursor.fetchone()
     conn.close()
 
-    assert entry is not None # Test 1.
+    assert entry is not None  # Test 1.
 
-    assert result == (True, "success") # Test 2.
+    assert result == (True, "success")  # Test 2.
 
-    assert entry[0] == "CVE-2021-1234" # Test 3.
-    assert entry[1] == 7.5 # Test 3.
-    assert entry[2] == "HIGH" # Test 3.
-    assert entry[6] == "REQUIRED" # Test 3.
+    assert entry[0] == "CVE-2021-1234"  # Test 3.
+    assert entry[1] == 7.5  # Test 3.
+    assert entry[2] == "HIGH"  # Test 3.
+    assert entry[6] == "REQUIRED"  # Test 3.
 
-def test_process_single_cve_v2_metrics(monkeypatch, test_db_path):
+
+def test_process_single_cve_v2_metrics(
+        monkeypatch,
+        test_db_path
+):
     """
     Test processing a CVE with v2 metrics.
 
@@ -468,10 +529,10 @@ def test_process_single_cve_v2_metrics(monkeypatch, test_db_path):
                                 "cvssData": {
                                     "baseScore": 6.8,
                                     "accessVector": "NETWORK",
-                                    "accessComplexity": "MEDIUM", 
+                                    "accessComplexity": "MEDIUM",
                                     "authentication": "NONE",
                                     "confidentialityImpact": "PARTIAL",
-                                    "integrityImpact": "PARTIAL", 
+                                    "integrityImpact": "PARTIAL",
                                     "availabilityImpact": "PARTIAL"
                                 },
                                 "baseSeverity": "MEDIUM",
@@ -496,13 +557,13 @@ def test_process_single_cve_v2_metrics(monkeypatch, test_db_path):
     entry = cursor.fetchone()
     conn.close()
 
-    assert entry is not None # Test 1.
+    assert entry is not None  # Test 1.
 
-    assert result == (True, "success") # Test 2.
+    assert result == (True, "success")  # Test 2.
 
-    assert entry[0] == "CVE-2021-1234" # Test 3.
-    assert entry[1] == 6.8 # Test 3.
-    assert entry[2] == "MEDIUM" # Test 3.
-    assert entry[3] == "NETWORK" # Test 3.
-    assert entry[6] == "Required" # Test 3.
-    assert entry[7] == "LOW" # Test 3.
+    assert entry[0] == "CVE-2021-1234"  # Test 3.
+    assert entry[1] == 6.8  # Test 3.
+    assert entry[2] == "MEDIUM"  # Test 3.
+    assert entry[3] == "NETWORK"  # Test 3.
+    assert entry[6] == "Required"  # Test 3.
+    assert entry[7] == "LOW"  # Test 3.

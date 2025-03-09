@@ -3,7 +3,9 @@ This file provides all necessary functions for processing the sqlite3 database.
 """
 import sqlite3
 
-### FUNCTIONS FOR DATABASE/TABLE INITIALIZATION ###
+# FUNCTIONS FOR DATABASE/TABLE INITIALIZATION #
+
+
 def initialize_database(db_file: str = "vuln_data.db"):
     """
     Creates the entire sqlite3 db and tables if they don't exist yet.
@@ -31,6 +33,7 @@ def initialize_database(db_file: str = "vuln_data.db"):
     create_stored_nvd_data_feed_table(cursor)
 
     create_past_exports_table(cursor)
+
 
 def create_cves_table(cursor: sqlite3.Cursor):
     """
@@ -64,6 +67,7 @@ def create_cves_table(cursor: sqlite3.Cursor):
     """
     cursor.execute(create_cves_table_query)
 
+
 def create_api_key_table(cursor: sqlite3.Cursor):
     """
     Creates the table for NVD API keys.
@@ -86,6 +90,7 @@ def create_api_key_table(cursor: sqlite3.Cursor):
     """
     cursor.execute(create_nvd_api_key_table_query)
 
+
 def create_scan_data_table(cursor: sqlite3.Cursor):
     """
     Creates the table for storing scan data.
@@ -96,10 +101,10 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
     4. file_path -> user's local file path to the scan's csv file.
     5. total_vulnerabilities -> count of all cve ids found in the csv file.
     6. unique_cve_list -> a list of all unique cve ids stored as a string.
-    7. cache_enabled -> true/false value whether the cves for that scan will be cached.
+    7. cache_enabled -> bool value for caching a scan.
     8. cached_percentage -> a float that represents the total # of unique cves
        that are currently in the cves table.
-    9. selected -> true/false if the user selected the scan to use in the report.
+    9. selected -> bool value if user selected the scan to use in the report.
     """
     create_scan_data_table_query = """
     CREATE TABLE IF NOT EXISTS scan_data (
@@ -114,6 +119,7 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
     )
     """
     cursor.execute(create_scan_data_table_query)
+
 
 def create_queried_nvd_data_feed_table(cursor: sqlite3.Cursor):
     """
@@ -134,6 +140,7 @@ def create_queried_nvd_data_feed_table(cursor: sqlite3.Cursor):
     )
     """
     cursor.execute(create_queried_nvd_data_feed_table_query)
+
 
 def create_stored_nvd_data_feed_table(cursor: sqlite3.Cursor):
     """
@@ -158,6 +165,7 @@ def create_stored_nvd_data_feed_table(cursor: sqlite3.Cursor):
     )
     """
     cursor.execute(create_stored_nvd_data_feed_table_query)
+
 
 def create_past_exports_table(cursor: sqlite3.Cursor):
     """

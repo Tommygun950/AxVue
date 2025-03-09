@@ -5,7 +5,7 @@ import pytest
 from PyQt5.QtWidgets import (
     QApplication, QGroupBox, QLabel, QTableWidget, QComboBox, QCheckBox, QPushButton
 )
-from gui.create_report_window.gui_create_report import MainWindow
+from gui.create_report_window.gui_create_report import CreateReportWindow
 
 @pytest.fixture
 def app():
@@ -17,7 +17,7 @@ def app():
 @pytest.fixture
 def main_window(app):
     """Creates a MainWindow instance for testing."""
-    window = MainWindow()
+    window = CreateReportWindow()
     window.show()
     yield window
     window.close()

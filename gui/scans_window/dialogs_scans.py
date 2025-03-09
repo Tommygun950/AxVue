@@ -3,7 +3,8 @@ This file contains all of the code for popup dialogs within the ScansWindow.
 
 This file contains the following Dialogs:
 1. AddScanDialog -> allows user to add scans to the db and table.
-2. GeneralErrorDialog -> generates an error with a custom error message.
+2. EditScanDialog -> allows user to edit a particular scan in the table/db.
+3. GeneralErrorDialog -> generates an error with a custom error message.
 """
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout,

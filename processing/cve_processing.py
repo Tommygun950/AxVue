@@ -1,12 +1,21 @@
+"""
+File for processing individual cves from csv files and NVD API.
+"""
 import sqlite3
 import requests
 
-def get_v3_metrics(metric_list: list) -> tuple:
+
+def get_v3_metrics(
+        metric_list: list
+) -> tuple:
     """
     Extracts and returns CVSS v3 metrics from a list of metric dictionaries.
     Returns a tuple with all base metric data.
     """
-    primary_metric = next((m for m in metric_list if m.get("type") == "Primary"), None)
+    primary_metric = next((
+        m for m in metric_list if m.get("type") == "Primary"),
+        None
+    )
     if primary_metric:
         return (
             primary_metric["cvssData"]["baseScore"],
@@ -32,7 +41,10 @@ def get_v3_metrics(metric_list: list) -> tuple:
             metric_list[0]["cvssData"]["availabilityImpact"]
         )
 
-def map_cvss_v2_impact(value: str) -> str:
+
+def map_cvss_v2_impact(
+        value: str
+) -> str:
     """
     Maps CVSS v2 impact values to a common vocabulary.
     Specifically:
@@ -47,7 +59,10 @@ def map_cvss_v2_impact(value: str) -> str:
     }
     return mapping.get(value.upper(), value)
 
-def map_cvss_v2_user_interaction(value) -> str:
+
+def map_cvss_v2_user_interaction(
+        value: str
+) -> str:
     """
     Maps CVSS v2 user interaction data to a common string.
     """
@@ -61,14 +76,22 @@ def map_cvss_v2_user_interaction(value) -> str:
             return "Required"
         return "None"
 
-def get_v2_metrics(metric_list: list) -> tuple:
+
+def get_v2_metrics(
+        metric_list: list
+) -> tuple:
     """
     Extracts and returns CVSS v2 metrics from a list of metric dictionaries.
     Returns a tuple with base metric data.
     """
-    primary_metric = next((m for m in metric_list if m.get("type") == "Primary"), None)
+    primary_metric = next(
+        (m for m in metric_list if m.get("type") == "Primary"),
+        None
+    )
     if primary_metric:
-        user_interaction = map_cvss_v2_user_interaction(primary_metric["userInteractionRequired"])
+        user_interaction = map_cvss_v2_user_interaction(
+            primary_metric["userInteractionRequired"]
+        )
         return (
             primary_metric["cvssData"]["baseScore"],
             primary_metric["baseSeverity"],
@@ -76,12 +99,20 @@ def get_v2_metrics(metric_list: list) -> tuple:
             primary_metric["cvssData"]["accessComplexity"],
             primary_metric["cvssData"]["authentication"],
             user_interaction,
-            map_cvss_v2_impact(primary_metric["cvssData"]["confidentialityImpact"]),
-            map_cvss_v2_impact(primary_metric["cvssData"]["integrityImpact"]),
-            map_cvss_v2_impact(primary_metric["cvssData"]["availabilityImpact"])
+            map_cvss_v2_impact(
+                primary_metric["cvssData"]["confidentialityImpact"]
+            ),
+            map_cvss_v2_impact(
+                primary_metric["cvssData"]["integrityImpact"]
+            ),
+            map_cvss_v2_impact(
+                primary_metric["cvssData"]["availabilityImpact"]
+            )
         )
     else:
-        user_interaction = map_cvss_v2_user_interaction(metric_list[0]["userInteraction"])
+        user_interaction = map_cvss_v2_user_interaction(
+            metric_list[0]["userInteraction"]
+        )
         return (
             metric_list[0]["cvssData"]["baseScore"],
             metric_list[0]["baseSeverity"],
@@ -89,17 +120,29 @@ def get_v2_metrics(metric_list: list) -> tuple:
             metric_list[0]["attackComplexity"],
             metric_list[0]["privilegesRequired"],
             user_interaction,
-            map_cvss_v2_impact(metric_list[0]["cvssData"]["confidentialityImpact"]),
-            map_cvss_v2_impact(metric_list[0]["cvssData"]["integrityImpact"]),
-            map_cvss_v2_impact(metric_list[0]["cvssData"]["availabilityImpact"])
+            map_cvss_v2_impact(
+                metric_list[0]["cvssData"]["confidentialityImpact"]
+            ),
+            map_cvss_v2_impact(
+                metric_list[0]["cvssData"]["integrityImpact"]
+            ),
+            map_cvss_v2_impact(
+                metric_list[0]["cvssData"]["availabilityImpact"]
+            )
         )
 
-def check_for_cve_record(cve_id: str, db_file: str = "vuln_data.db") -> bool:
+
+def check_for_cve_record(
+        cve_id: str,
+        db_file: str = "vuln_data.db"
+) -> bool:
     """
-    Given a cve id, it'll check the vuln_data.db and cves table if cve_id record exists.
+    Given a cve id, it'll check the vuln_data.db andcves table if
+    cve_id record exists.
 
     The function should do the following:
-    1. Take a cve id, and query the cves table to see if base metric data comes back.
+    1. Take a cve id, and query the cves table to see if base metric
+    data comes back.
     2. If all of the cve data comes back, return true.
     """
     conn = sqlite3.connect(db_file)
@@ -122,17 +165,24 @@ def check_for_cve_record(cve_id: str, db_file: str = "vuln_data.db") -> bool:
         return False
 
     default_values = (0.0, "", "", "", "", "", "", "", "")
-    
+
     if row != default_values:
         return True
     return False
 
-def process_single_cve(cve_id: str, nvd_api_key: str, db_file: str = "vuln_data.db") -> tuple:
+
+def process_single_cve(
+        cve_id: str,
+        nvd_api_key: str,
+        db_file: str = "vuln_data.db"
+) -> tuple:
     """
-    Processes a single CVE by ensuring it's existance in the vuln_data.db in the cves table.
+    Processes a single CVE by ensuring it's existance in the vuln_data.db
+    in the cves table.
 
     The function should do the following:
-    1. Check to see if it exists already in the sql db, if so return a (True, "cached") tuple.
+    1. Check to see if it exists already in the sql db, if so return a
+    (True, "cached") tuple.
     2. Make an api request for the single cve id.
         a. Raise an exception for a request timeout.
         b. Raise an eception for a bad request.
