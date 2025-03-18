@@ -7,6 +7,9 @@ from PyQt5.QtWidgets import (
     QTableWidget, QHeaderView, QPushButton,
     QLabel, QHBoxLayout, QGroupBox
 )
+from gui.api_keys_window.dialogs_api_keys import (
+    AddAPIKeyDialog, EditAPIKeyDialog
+)
 
 class ApiKeysWindow(QMainWindow):
     """Main window for API Keys page."""
@@ -45,21 +48,14 @@ class ApiKeysWindow(QMainWindow):
         group_layout = QVBoxLayout(self.api_keys_summary_group)
 
         summary_text = (
-            "On this page, you can add and manage your NVD API Keys. To add an API key, click the 'Add API Key' "
-            "button at the bottom of this page. You'll need to provide a name for your key and the actual API key value. "
-            "Important features:\n"
-            " 1. The program automatically validates your API keys by checking for 404 errors when connecting to the NVD API.\n"
-            " 2. You can add multiple API keys to ensure report generation continues even if one key becomes invalid.\n"
-            " 3. To use an API key, select the checkbox to the left of the key entry in the table.\n"
-            " 4. Using multiple API keys will not speed up report generation, but provides redundancy in case a key fails.\n"
-            " 5. After adding an API key to the table, you can edit or delete it using the corresponding buttons in its row.\n"
-            "Selected API keys will be used when generating vulnerability reports from your scan data."
+            "Step 2: Add your NVD API keys to the table and select the "
+            "checkbox for the keys you want to include in your report. "
         )
 
         summary_label = QLabel(summary_text)
         summary_label.setWordWrap(True)
         group_layout.addWidget(summary_label)
-        
+
         self.layout.addWidget(self.api_keys_summary_group)
 
     def init_api_keys_section(self):
@@ -130,3 +126,21 @@ class ApiKeysWindow(QMainWindow):
         init_button_layout(self)
         init_api_keys_table(self)
         self.layout.addWidget(api_keys_group)
+
+    # FUNCTIONS FOR OPENING DIALOGS FROM DIALOGS_API_KEYS.PY #
+    def open_add_api_key_dialog(self):
+        """
+        Opens the Add API Key Dialog when user clicks the "Add API Key" button.
+
+        This function should:
+        1. Execute the AddAPIKeyDialog.
+        2. If the dialog is accepted, retrieve the API Key Name & value
+        & call _add_api_key.
+        """
+        dialog = AddAPIKeyDialog(self)
+        if dialog.exec_():
+            key_name = dialog.api_key_name_edit.text()
+            key_value = dialog.api_key_value_edit.text()
+
+            _add_api_key(key_name, key_value)
+            self.populate_api_keys_table()

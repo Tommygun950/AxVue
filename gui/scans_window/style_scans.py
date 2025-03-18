@@ -5,6 +5,19 @@ from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtWidgets import QTableWidget
 from PyQt5.QtCore import Qt
 
+# VARS FOR COLOR PALETTE #
+bg_color = "#e7e2f3"
+border_color = "#1a2233"
+
+groupbox_bg_color = "#2d3c67"
+groupbox_txt_color = "#e7e2f3"
+
+add_button_txt_color = "white"
+add_button_color = "#56d156"
+add_button_hover_color = "#2ade2a"
+add_button_pressed_color = "#5AAF5A"
+
+
 # FUNCTIONS FOR ESTABLISHING STYLE #
 
 
@@ -18,7 +31,7 @@ def style_scans_window(window):
     3. Apply the pallete style.
     """
     window_palette = window.central_widget.palette()
-    window_palette.setColor(QPalette.Window, QColor("#e7e2f3"))
+    window_palette.setColor(QPalette.Window, QColor(bg_color))
     window.central_widget.setAutoFillBackground(True)
     window.central_widget.setPalette(window_palette)
 
@@ -28,16 +41,16 @@ def style_group_box(group_box):
     Applies styling to a given QGroupBox.
 
     This function should:
-    1. Format The QGroupBox title.
+    1. Format the QGroupBox title.
     2. Format the QGroupBox content.
     3. Format the content/QLabel words.
     """
-    style = """
-        QGroupBox::title {
-            background-color: #2d3c67;
-            color: #e7e2f3;
+    style = f"""
+        QGroupBox::title {{
+            background-color: {groupbox_bg_color};
+            color: {groupbox_txt_color};
 
-            border: 1px solid #1a2233;
+            border: 1px solid {border_color};
             border-radius: 8px;
 
             margin-bottom: 1px;
@@ -45,28 +58,27 @@ def style_group_box(group_box):
 
             subcontrol-origin: margin;
             subcontrol-position: top center;
-        }
-        QGroupBox {
-            background-color: #2d3c67;
-            color: #e7e2f3;
+        }}
+        QGroupBox {{
+            background-color:{groupbox_bg_color};
 
             font-weight: bold;
             font-size: 14pt;
 
-            border: 1px solid #1a2233;
+            border: 1px solid {border_color};
             border-radius: 5px;
 
             margin-top: 20px;
             padding-top: 10px;
-        }
-        QGroupBox QLabel {
-            color: #e7e2f3;
+        }}
+        QGroupBox QLabel {{
+            color: {bg_color};
 
             font-weight: bold;
             font-size: 10pt;
 
             qproperty-alignment: 'AlignCenter';
-        }
+        }}
     """
 
     group_box.setStyleSheet(style)
@@ -82,10 +94,10 @@ def style_add_scan_button(button):
         b. Hovered over.
         c. Pressed.
     """
-    button.setStyleSheet("""
-        QPushButton {
-            background-color: #56d156;
-            color: white;
+    style = f"""
+        QPushButton {{
+            background-color: {add_button_color};
+            color: {add_button_txt_color};
 
             font-weight: bold;
 
@@ -93,14 +105,16 @@ def style_add_scan_button(button):
             border-radius: 4px;
 
             padding: 6px 12px;
-        }
-        QPushButton:hover {
-            background-color: #2ade2a;
-        }
-        QPushButton:pressed {
-            background-color: #5AAF5A;
-        }
-    """)
+        }}
+        QPushButton:hover {{
+            background-color: {add_button_hover_color};
+        }}
+        QPushButton:pressed {{
+            background-color: {add_button_pressed_color};
+        }}
+    """
+
+    button.setStyleSheet(style)
 
 
 def style_scan_table(table):
@@ -121,7 +135,7 @@ def style_scan_table(table):
         QTableWidget {
             background-color: #e7e2f3;
 
-            border: 1x solid #2d3c67;
+            border: 1px solid #2d3c67;
             border-radius: 4px;
         }
         QTableWidget::item {
@@ -163,7 +177,6 @@ def style_scan_table(table):
     font.setBold(True)
     header.setFont(font)
 
-    # Center align the text in each cell
     for row in range(table.rowCount()):
         for col in range(table.columnCount()):
             item = table.item(row, col)

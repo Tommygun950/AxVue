@@ -56,6 +56,7 @@ class AddScanDialog(QDialog):
         layout = QVBoxLayout(self)  # 1.
 
         def scan_name_section():
+            """Creates the Scan Name Section of the Dialog."""
             name_layout = QHBoxLayout()  # 1a.
             name_label = QLabel("Scan Name:")  # 1a1.
             self.scan_name_edit = QLineEdit()  # 1a2.
