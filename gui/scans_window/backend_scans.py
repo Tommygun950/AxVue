@@ -16,6 +16,7 @@ def _add_scan(
     """
     Given a scan name and file path to a valid CSV scan file,
     add it to the scan_data table in the db file.
+
     This function should:
     1. Check if there's data in scan_name and file_path.
         a. If not, return an error dialog.
@@ -48,9 +49,9 @@ def _add_scan(
             error_dialog.exec_()
             return (False, "Invalid File Format")
 
-    success, message = check_for_errors()
-    if success is False:
-        return (success, message)
+        success, message = check_for_errors()
+        if success is False:
+            return (success, message)
 
     cve_id_list, cve_id_set = return_cve_ids_from_csv(file_path)
     total_vulnerabilities = len(cve_id_list)
@@ -113,7 +114,7 @@ def _edit_scan(
         b. unique_cve_list.
         c. cache_enabled.
         d. cached_percentage.
-    3. take the given & processed values and update the scan in the db.
+    3. Take the given & processed values and update the scan in the db.
     """
     if scan_name == "" or file_path == "":
         error_dialog = GeneralErrorDialog(
@@ -129,7 +130,7 @@ def _edit_scan(
 
     cache_enabled_int = 1 if cache_enabled else 0
 
-    conn = sqlite3.connect("vuln_data.db")
+    conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
 
     try:
@@ -173,7 +174,7 @@ def _delete_scan(
     Deletes a scan from the database given a scan ID.
 
     This function should:
-    1. Conect to the database.
+    1. Connect to the database.
     2. Delete the scan with the specified ID from the scan_data table.
     3. Return a tuple with (success flag, message).
     """
@@ -335,7 +336,7 @@ def _get_scan_data(
             }
         else:
             error_dialog = GeneralErrorDialog(
-                f"Scan with ID {scan_id} not found.", None
+                f"Scan with ID {scan_id} not found."
             )
             error_dialog.exec_()
             return None

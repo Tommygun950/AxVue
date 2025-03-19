@@ -177,8 +177,8 @@ class ScansWindow(QMainWindow):
         Opens the Add Scan dialog when the user clicks the "Add Scan" button.
 
         This function should:
-        2. Execute the AddScanDialog.
-        3. If the dialog is accepted, retrieve the scan name
+        1. Execute the AddScanDialog.
+        2. If the dialog is accepted, retrieve the scan name
            and file path and call _add_scan.
         """
         dialog = AddScanDialog(self)
@@ -306,7 +306,7 @@ class ScansWindow(QMainWindow):
         Opens the Edit Scan dialog when the user clicks the "Edit"
         button for a scan.
 
-        this function should:
+        This function should:
         1. Call the open_edit_scan_dialog function with the scan_id.
         """
         self.open_edit_scan_dialog(scan_id)

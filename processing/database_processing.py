@@ -38,7 +38,7 @@ def initialize_database(db_file: str = "vuln_data.db"):
 def create_cves_table(cursor: sqlite3.Cursor):
     """
     Creates the table for cve id and CVSS metric data.
-    
+
     Includes the following fields:
     1.  cve_id -> primary key for the table.
     2.  base_score
@@ -71,21 +71,23 @@ def create_cves_table(cursor: sqlite3.Cursor):
 def create_api_key_table(cursor: sqlite3.Cursor):
     """
     Creates the table for NVD API keys.
-    
+
     Includes the following fields:
     1. id -> primary key for identifying nvd api keys.
     2. key_name -> the given name of an nvd api key given by the user.
     3. key_value -> the actual api key string.
     4. status -> notifies program if api key works.
     5. error_count -> used to count # of 404's returned from an api key.
+    6. selected -> bool value if user selected the key to use in the report.
     """
     create_nvd_api_key_table_query = """
     CREATE TABLE IF NOT EXISTS nvd_api_key (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         key_name TEXT NOT NULL,
-        kev_value TEXT NOT NULL,
+        key_value TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'Valid',
-        error_count INTEGER NOT NULL DEFAULT 0
+        error_count INTEGER NOT NULL DEFAULT 0,
+        selected INTEGER NOT NULL DEFAULT 0
     )
     """
     cursor.execute(create_nvd_api_key_table_query)

@@ -191,8 +191,8 @@ def test_create_api_key_table(temp_db_file):
     conn.close()
 
     assert [
-        len(columns) == 5,
-        f"Expected 5 columns in nvd_api_key table, got {len(columns)}"
+        len(columns) == 6,
+        f"Expected 6 columns in nvd_api_key table, got {len(columns)}"
     ]  # Test 1.
 
     pk_column = next((col for col in columns if col[5] == 1), None)
@@ -213,15 +213,16 @@ def test_create_api_key_table(temp_db_file):
 
     column_names = [col[1] for col in columns]
     expected_columns = [
-        'id', 'key_name', 'kev_value', 'status', 'error_count'
+        'id', 'key_name', 'key_value', 'status', 'error_count'
     ]
 
     expected_types = {
         'id': 'INTEGER',
         'key_name': 'TEXT',
-        'kev_value': 'TEXT',
+        'key_value': 'TEXT',
         'status': 'TEXT',
-        'error_count': 'INTEGER'
+        'error_count': 'INTEGER',
+        'selected': 'INTEGER'
     }
 
     for expected_col in expected_columns:
