@@ -125,19 +125,21 @@ class ScansWindow(QMainWindow):
 
             This function should:
             1. Setup a table widget with the following columns:
-                a. Scan Name.
-                b. Total CVE IDs.
-                c. Unique CVE IDs.
-                d. Cache.
-                e. Edit.
-                f. Delete.
+                a. Select.
+                b. Scan Name.
+                c. Total CVE IDs.
+                d. Unique CVE IDs.
+                e. Cache.
+                f. Edit.
+                g. Delete.
             2. Ensure the resising of the columns do the following:
-                a. Scan name -> Stretch.
-                b. Total CVE IDs -> Resize to Contents.
-                c. Unique CVE IDs -> Resize to Contents.
-                d. Cache -> Resize to Contents.
-                e. Edit -> Resize to Contents.
-                f. Delete -> Resize to Contents.
+                a. Select -> Resize to Contents.
+                b. Scan name -> Stretch.
+                c. Total CVE IDs -> Resize to Contents.
+                d. Unique CVE IDs -> Resize to Contents.
+                e. Cache -> Resize to Contents.
+                f. Edit -> Resize to Contents.
+                g. Delete -> Resize to Contents.
             3. Add the label and table widget to the layout.
             """
             self.scan_table = QTableWidget()
@@ -224,6 +226,7 @@ class ScansWindow(QMainWindow):
                 if success:
                     self.populate_scans_table()
 
+    # FUNCTIONS FOR DISPLAYING BACKEND DATA #
     def handle_checkbox_state_change(self, scan_id, state):
         """
         Updates the selected status in the database when a checkbox is toggled.
@@ -235,7 +238,6 @@ class ScansWindow(QMainWindow):
         selected = state == Qt.Checked
         _update_scan_selected_status(scan_id, selected)
 
-    # FUNCTIONS FOR DISPLAYING BACKEND DATA #
     def populate_scans_table(self):
         """
         Loads scan data from the database and populates the scan table.

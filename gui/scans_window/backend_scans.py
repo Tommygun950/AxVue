@@ -118,10 +118,13 @@ def _edit_scan(
     """
     if scan_name == "" or file_path == "":
         error_dialog = GeneralErrorDialog(
-            "Scan name or file path cannot be empty."
+            "Scan name and file path cannot be empty."
         )
         error_dialog.exec_()
-        return (False, "Empty Scan Name and/or File Path.")
+        return (
+            False,
+            "Empty Scan Name and/or File Path."
+        )
 
     cve_id_list, cve_id_set = return_cve_ids_from_csv(file_path)
     total_vulnerabilities = len(cve_id_list)
@@ -157,13 +160,23 @@ def _edit_scan(
         conn.commit()
         conn.close()
 
-        return (True, f"Successfully updated scan: {scan_name}")
+        return (
+            True,
+            f"Successfully updated scan: {scan_name}"
+        )
 
     except sqlite3.Error as e:
         conn.close()
-        error_dialog = GeneralErrorDialog(f"Database error: {str(e)}", None)
+
+        error_dialog = GeneralErrorDialog(
+            f"Database error: {str(e)}", None
+        )
         error_dialog.exec_()
-        return (False, f"Database error: {str(e)}")
+
+        return (
+            False,
+            f"Database error: {str(e)}"
+        )
 
 
 def _delete_scan(
@@ -187,13 +200,21 @@ def _delete_scan(
         conn.commit()
         conn.close()
 
-        return (True, f"Successfully deleted scan with ID: {scan_id}")
+        return (
+            True,
+            f"Successfully deleted scan with ID: {scan_id}"
+        )
 
     except sqlite3.Error as e:
         conn.close()
-        error_dialog = GeneralErrorDialog(f"Database error: {str(e)}")
+        error_dialog = GeneralErrorDialog(
+            f"Database error: {str(e)}"
+        )
         error_dialog.exec_()
-        return (False, f"Database error: {str(e)}")
+        return (
+            False,
+            f"Database error: {str(e)}"
+        )
 
 
 def _update_scan_selected_status(
@@ -236,7 +257,10 @@ def _update_scan_selected_status(
         conn.close()
         error_dialog = GeneralErrorDialog(f"Database error: {str(e)}")
         error_dialog.exec_()
-        return (False, f"Database error: {str(e)}")
+        return (
+            False,
+            f"Database error: {str(e)}"
+        )
 
 
 def _get_all_scan_data(
@@ -268,8 +292,13 @@ def _get_all_scan_data(
         formatted_scans = []
         for row in scan_rows:
             (
-                scan_id, name, total_cves, unique_cves,
-                cache_enabled, cached_percentage, selected
+                scan_id,
+                name,
+                total_cves,
+                unique_cves,
+                cache_enabled,
+                cached_percentage,
+                selected
             ) = row
 
             unique_cve_count = 0
@@ -289,6 +318,7 @@ def _get_all_scan_data(
 
         conn.close()
         return formatted_scans
+
     except sqlite3.Error as e:
         error_dialog = GeneralErrorDialog(f"Database error: {str(e)}", None)
         error_dialog.exec_()
@@ -336,7 +366,7 @@ def _get_scan_data(
             }
         else:
             error_dialog = GeneralErrorDialog(
-                f"Scan with ID {scan_id} not found."
+                f"Scan with ID {scan_id} was not found."
             )
             error_dialog.exec_()
             return None

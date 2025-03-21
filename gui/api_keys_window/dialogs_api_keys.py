@@ -180,7 +180,7 @@ class EditAPIKeyDialog(QDialog):
             self.update_status_button_text()
             self.status_button.clicked.connect(self.toggle_status)
             status_layout.addWidget(status_label)
-            status_layout.addWidget(set.status_button)
+            status_layout.addWidget(self.status_button)
             layout.addLayout(status_layout)
 
         def buttons_section():
@@ -222,7 +222,7 @@ class EditAPIKeyDialog(QDialog):
         self.update_status_button_text()
 
 
-class GeneralErrordialog(QDialog):
+class GeneralErrorDialog(QDialog):
     """
     Dialog for displaying a general error message.
     """

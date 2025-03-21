@@ -6,8 +6,9 @@ from PyQt5.QtWidgets import (
 from .create_report_window.gui_create_report import CreateReportWindow
 from .exports_window.gui_exports import ExportsWindow
 from .scans_window.gui_scans import ScansWindow
-from .api_keys_window.gui_api_keys import ApiKeysWindow
+from .api_keys_window.gui_api_keys import APIKeysWindow
 from .cache_window.gui_cache import CacheWindow
+from .style_gui import integrate_toolbar_styling
 
 
 class MainAppWindow(QMainWindow):
@@ -24,7 +25,8 @@ class MainAppWindow(QMainWindow):
         d. 4. Create Report
         e. 5. Exports
     4. Add those pages to the stacked widget.
-    5. Initialize the toolbar with the buttons to access thos pages.
+    5. Initialize the toolbar with the buttons to access those pages.
+    6. Apply styling to the toolbar.
     """
     def __init__(self):
         super().__init__()
@@ -36,7 +38,7 @@ class MainAppWindow(QMainWindow):
         self.setCentralWidget(self.stacked_widget)
 
         self.scans_page = ScansWindow()
-        self.api_keys_page = ApiKeysWindow()
+        self.api_keys_page = APIKeysWindow()
         self.cache_page = CacheWindow()
         self.create_report_page = CreateReportWindow()
         self.exports_page = ExportsWindow()
@@ -48,6 +50,7 @@ class MainAppWindow(QMainWindow):
         self.stacked_widget.addWidget(self.exports_page.central_widget)
 
         self.init_toolbar()
+        integrate_toolbar_styling(self)
 
     def init_toolbar(self):
         """
@@ -57,45 +60,47 @@ class MainAppWindow(QMainWindow):
         1. Create the main toolbar.
         2. Create the following buttons:
             a. 1. Scans -> opens ScansWindow.
-            b. 2. API Keys -> opens ApiKeysWindow.
+            b. 2. API Keys -> opens APIKeysWindow.
             c. 3. Cache -> opens CacheWindow.
             d. 4. Create report -> opens CreateReportWindow.
             e. 5. Exports -> opens ExportsWindow.
         3. Add the buttons to the toolbar.
+        4. Store the toolbar as an instance variable so it can be styled.
         """
-        toolbar = QToolBar("Main Toolbar")
-        self.addToolBar(toolbar)
+        self.toolbar = QToolBar("Main Toolbar")
+        self.addToolBar(self.toolbar)
 
-        scans_action = QAction("1. Scans", self)
-        scans_action.triggered.connect(
-            lambda: self.stacked_widget.setCurrentIndex(0)
-        )
+        def create_page_action(text, index):
+            action = QAction(text, self)
+            action.triggered.connect(
+                lambda: self.switch_page(index)
+            )
+            return action
 
-        api_keys_action = QAction("2. API Keys", self)
-        api_keys_action.triggered.connect(
-            lambda: self.stacked_widget.setCurrentIndex(1)
-        )
+        scans_action = create_page_action("1. Scans", 0)
+        api_keys_action = create_page_action("2. API Keys", 1)
+        cache_action = create_page_action("3. Cache", 2)
+        create_report_action = create_page_action("4. Create Report", 3)
+        exports_action = create_page_action("5. Exports", 4)
 
-        cache_action = QAction("3. Cache", self)
-        cache_action.triggered.connect(
-            lambda: self.stacked_widget.setCurrentIndex(2)
-        )
+        self.toolbar.addAction(scans_action)
+        self.toolbar.addAction(api_keys_action)
+        self.toolbar.addAction(cache_action)
+        self.toolbar.addAction(create_report_action)
+        self.toolbar.addAction(exports_action)
 
-        create_report_action = QAction("4. Create Report", self)
-        create_report_action.triggered.connect(
-            lambda: self.stacked_widget.setCurrentIndex(3)
-        )
+    def switch_page(self, index):
+        """
+        Switch to the specified page index and update toolbar action states.
 
-        exports_action = QAction("5. Exports", self)
-        exports_action.triggered.connect(
-            lambda: self.stacked_widget.setCurrentIndex(4)
-        )
+        This function should:
+        1. Set the current index of the stacked widget.
+        2. Update the checked state of all actions to match the current page.
+        """
+        self.stacked_widget.setCurrentIndex(index)
 
-        toolbar.addAction(scans_action)
-        toolbar.addAction(api_keys_action)
-        toolbar.addAction(cache_action)
-        toolbar.addAction(create_report_action)
-        toolbar.addAction(exports_action)
+        for i, action in enumerate(self.toolbar.actions()):
+            action.setChecked(i == index)
 
 
 if __name__ == "__main__":
