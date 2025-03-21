@@ -36,10 +36,11 @@ def _add_api_key(
             )
             error_dialog.exec_()
             return (False, "Empty Field")
+        return (True, "success")
 
-        success, message = check_for_errors()
-        if success is False:
-            return (success, message)
+    success, message = check_for_errors()
+    if success is False:
+        return (success, message)
 
     status = True
     error_count = 0
@@ -207,15 +208,13 @@ def _update_api_key_selected_status(
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
-        selected_int = 1 if selected else 0
-
         cursor.execute(
             """
             UPDATE nvd_api_key
             SET selected = ?
             WHERE id = ?
             """,
-            (selected_int, id)
+            (selected, id)
         )
 
         conn.commit()
@@ -248,6 +247,17 @@ def _get_all_api_key_data(
     3. Format the query return into a list of dictionary values for each scan.
     4. If the SQL query fails, return a GeneralErrorDialog for a db error.
     """
+    def convert_status_int_to_str(status: int) -> str:
+        """
+        This function converts the status variable from an integer
+        since SQL stores it as an int, and changes it to a str
+        as either "Valid" or "Invalid".
+        """
+        if status == 1:
+            return "Valid"
+        else:
+            return "Invalid"
+
     try:
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
@@ -278,11 +288,13 @@ def _get_all_api_key_data(
                 selected
             ) = row
 
+            status_validity = convert_status_int_to_str(status)
+
             formatted_api_key = {
                 "id": key_id,
                 "key_name": key_name,
                 "key_value": key_value,
-                "status": "Valid" if status else "Invalid",
+                "status": status_validity,
                 "error_count": error_count,
                 "selected": bool(selected)
             }
@@ -310,6 +322,17 @@ def _get_api_key_data(
     3. Return the dict with the API key details or None if not found.
     4. If the SQL query fails, show a GeneralErrorDialog for a db error.
     """
+    def convert_status_int_to_bool(status: int) -> bool:
+        """
+        This function converts the status variable from an integer
+        since SQL stores it as an int, and changes it to a boolean
+        value for processing.
+        """
+        if status == 1:
+            return True
+        else:
+            return False
+
     try:
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
@@ -332,10 +355,12 @@ def _get_api_key_data(
         conn.close()
 
         if api_key_data:
+            status_validity = convert_status_int_to_bool(api_key_data[2])
+
             return {
                 "key_name": api_key_data[0],
                 "key_value": api_key_data[1],
-                "status": bool(api_key_data[2]),
+                "status": status_validity,
                 "error_count": api_key_data[3],
                 "selected": api_key_data[4]
             }

@@ -93,7 +93,7 @@ class EditAPIKeyDialog(QDialog):
     def __init__(
         self, id,
         key_name, key_value,
-        status, parent=None
+        status_validity, parent=None
     ):
         """
         Initializes the QDialog popup with existing API Key Data.
@@ -102,14 +102,14 @@ class EditAPIKeyDialog(QDialog):
         1. id.
         2. key_name.
         3. key_value.
-        4. status.
+        4. status_validity.
         """
         super().__init__(parent)
         self.setWindowTitle("Edit API Key")
         self.id = id
         self.key_name = key_name
         self.key_value = key_value
-        self.status = status
+        self.status_validity = status_validity
         self.setup_ui()
 
     def setup_ui(self):
@@ -206,7 +206,8 @@ class EditAPIKeyDialog(QDialog):
         This function should:
         1. change the text on the gui dialog depending on the value.
         """
-        if self.status:
+        print(self.status_validity)
+        if self.status_validity:
             self.status_button.setText("Valid")
         else:
             self.status_button.setText("Invalid")
@@ -218,7 +219,7 @@ class EditAPIKeyDialog(QDialog):
         this function should:
         1. If the status button is toggled, switch it to the opposite value.
         """
-        self.status = not self.status
+        self.status_validity = not self.status_validity
         self.update_status_button_text()
 
 

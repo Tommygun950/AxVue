@@ -215,7 +215,7 @@ class ScansWindow(QMainWindow):
                 updated_scan_name = dialog.scan_name_edit.text()
                 updated_file_path = dialog.file_path_edit.text()
                 updated_cache_enabled = dialog.cache_enabled
-
+                print(updated_cache_enabled)
                 success, message = _edit_scan(
                     scan_id,
                     updated_scan_name,

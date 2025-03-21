@@ -223,13 +223,15 @@ class APIKeysWindow(QMainWindow):
                 id,
                 api_key_details["key_name"],
                 api_key_details["key_value"],
-                api_key_details["status"]
+                api_key_details["status"],
+                self
             )
 
             if dialog.exec_():
                 updated_api_key_name = dialog.key_name_edit.text()
                 updated_api_key_value = dialog.key_value_edit.text()
-                updated_status = dialog.status
+                updated_status = dialog.status_validity
+                print(updated_status)
 
                 success, message = _edit_api_key(
                     id,
