@@ -17,6 +17,17 @@ add_button_color = "#56d156"
 add_button_hover_color = "#2ade2a"
 add_button_pressed_color = "#5AAF5A"
 
+# Delete button colors (for reuse in cache disabled style)
+delete_button_color = "#e74c3c"
+delete_button_hover_color = "#c94032"
+delete_button_pressed_color = "#a73529"
+
+# Cached percentage colors
+cached_perc_low_color = "#ffb3b3"    # Light red for < 33%
+cached_perc_med_color = "#ffffb3"    # Light yellow for 33-66%
+cached_perc_high_color = "#b3ffb3"   # Light green for > 66%
+cached_perc_text_color = "#333333"   # Dark text for better contrast
+
 
 # FUNCTIONS FOR ESTABLISHING STYLE #
 
@@ -186,14 +197,86 @@ def style_scan_table(table):
 
 def style_table_buttons(table):
     """
-    Applies styling to the Edit and Delete buttons in the table.
-
-    This function should:
-    1. Style the Edit buttons.
-    2. Style the Delete buttons.
+    Applies styling to the buttons in the table:
+    1. Cache buttons (Enabled/Disabled)
+    2. Cached percentage buttons (color-coded by percentage range)
+    3. Edit buttons
+    4. Delete buttons
     """
     rows = table.rowCount()
     for row in range(rows):
+        # Style Cache buttons based on their status
+        cache_button = table.cellWidget(row, 4)
+        if cache_button:
+            if cache_button.text() == "Enabled":
+                # Green style (same as Add Scan button) for Enabled
+                cache_button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {add_button_color};
+                        color: {add_button_txt_color};
+                        border: none;
+                        border-radius: 4px;
+                        padding: 5px;
+                        font-size: 10px;
+                        font-weight: bold;
+                    }}
+                """)
+            else:  # Disabled
+                # Red style (same as Delete button) for Disabled
+                cache_button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {delete_button_color};
+                        color: {add_button_txt_color};
+                        border: none;
+                        border-radius: 4px;
+                        padding: 5px;
+                        font-size: 10px;
+                        font-weight: bold;
+                    }}
+                """)
+
+        # Style Cached Percentage button based on percentage value
+        cached_perc_button = table.cellWidget(row, 5)
+        if cached_perc_button:
+            # Extract the percentage value from the button text
+            button_text = cached_perc_button.text()
+            percentage_text = button_text.replace('%', '')
+            try:
+                percentage = float(percentage_text)
+
+                # Apply different colors based on percentage ranges
+                if percentage < 33:
+                    bg_color = cached_perc_low_color    # Light red
+                elif percentage <= 66:
+                    bg_color = cached_perc_med_color    # Light yellow
+                else:
+                    bg_color = cached_perc_high_color   # Light green
+
+                cached_perc_button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {bg_color};
+                        color: {cached_perc_text_color};
+                        font-weight: bold;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 5px;
+                        font-size: 10px;
+                    }}
+                """)
+            except ValueError:
+                # Fallback if percentage cannot be parsed
+                cached_perc_button.setStyleSheet("""
+                    QPushButton {
+                        background-color: #688cca;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 5px;
+                        font-size: 10px;
+                    }
+                """)
+
+        # Style Edit button
         edit_button = table.cellWidget(row, 6)
         if edit_button:
             edit_button.setStyleSheet("""
@@ -216,11 +299,12 @@ def style_table_buttons(table):
                 }
             """)
 
+        # Style Delete button
         delete_button = table.cellWidget(row, 7)
         if delete_button:
-            delete_button.setStyleSheet("""
-                QPushButton {
-                    background-color: #e74c3c;
+            delete_button.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {delete_button_color};
                     color: white;
 
                     border: none;
@@ -229,13 +313,13 @@ def style_table_buttons(table):
                     padding: 5px;
 
                     font-size: 15px;
-                }
-                QPushButton:hover {
-                    background-color: #c94032;
-                }
-                QPushButton:pressed {
-                    background-color: #a73529;
-                }
+                }}
+                QPushButton:hover {{
+                    background-color: {delete_button_hover_color};
+                }}
+                QPushButton:pressed {{
+                    background-color: {delete_button_pressed_color};
+                }}
             """)
 
 # FUNCTIONS FOR INTEGRATING STYLE INTO WINDOW #

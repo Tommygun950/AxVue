@@ -103,7 +103,7 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
     4. file_path -> user's local file path to the scan's csv file.
     5. total_vulnerabilities -> count of all cve ids found in the csv file.
     6. unique_cve_list -> a list of all unique cve ids stored as a string.
-    7. cache_enabled -> bool value for caching a scan.
+    7. cache_enabled -> string value for caching a scan.
     8. cached_percentage -> a float that represents the total # of unique cves
        that are currently in the cves table.
     9. selected -> bool value if user selected the scan to use in the report.
@@ -115,7 +115,7 @@ def create_scan_data_table(cursor: sqlite3.Cursor):
         file_path TEXT NOT NULL,
         total_vulnerabilities INTEGER,
         unique_cve_list TEXT,
-        cache_enabled INTEGER NOT NULL DEFAULT 1,
+        cache_enabled TEXT NOT NULL DEFAULT 'Enabled',
         cached_percentage FLOAT NOT NULL DEFAULT 0.0,
         selected INTEGER NOT NULL DEFAULT 0
     )

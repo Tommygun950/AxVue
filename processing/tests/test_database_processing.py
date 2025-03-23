@@ -317,7 +317,7 @@ def test_create_scan_data_table(temp_db_file):
         'file_path': 'TEXT',
         'total_vulnerabilities': 'INTEGER',
         'unique_cve_list': 'TEXT',
-        'cache_enabled': 'INTEGER',
+        'cache_enabled': 'TEXT',
         'cached_percentage': 'FLOAT',
         'selected': 'INTEGER'
     }

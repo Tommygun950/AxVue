@@ -1,20 +1,20 @@
 """
 This file is used to construct the Scans window in the GUI.
 """
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QWidget, QMainWindow, QVBoxLayout,
     QTableWidget, QHeaderView, QPushButton,
     QLabel, QHBoxLayout, QGroupBox, QTableWidgetItem,
     QCheckBox
 )
-from PyQt5.QtCore import Qt
 from gui.scans_window.dialogs_scans import (
     AddScanDialog, EditScanDialog
 )
 from gui.scans_window.backend_scans import (
     _add_scan, _edit_scan, _delete_scan,
     _get_all_scan_data, _get_scan_data,
-    _update_scan_selected_status
+    _update_scan_selected_field
 )
 from gui.scans_window.style_scans import (
     integrate_window_styling,
@@ -25,6 +25,7 @@ from gui.scans_window.style_scans import (
 
 class ScansWindow(QMainWindow):
     """Main window for Scans page."""
+    # FUNCTIONS FOR INITIALIZING GUI ELEMENTS/LAYOUTS/WIDGETS #
     def __init__(self):
         """
         This function initializes the scans page & features.
@@ -54,11 +55,9 @@ class ScansWindow(QMainWindow):
         integrate_window_styling(self)
 
         integrate_summary_group_styling(self)
-        integrate_scans_group_styling(self)  # First call to color buttons.
+        integrate_scans_group_styling(self)
 
         self.populate_scans_table()
-
-        integrate_scans_group_styling(self)  # Second call to center text.
 
     def init_scans_summary(self):
         """
@@ -125,33 +124,29 @@ class ScansWindow(QMainWindow):
 
             This function should:
             1. Setup a table widget with the following columns:
-                a. Select.
-                b. Scan Name.
-                c. Total CVE IDs.
-                d. Unique CVE IDs.
-                e. Cache.
-                f. Edit.
-                g. Delete.
-            2. Ensure the resising of the columns do the following:
-                a. Select -> Resize to Contents.
-                b. Scan name -> Stretch.
-                c. Total CVE IDs -> Resize to Contents.
-                d. Unique CVE IDs -> Resize to Contents.
-                e. Cache -> Resize to Contents.
-                f. Edit -> Resize to Contents.
-                g. Delete -> Resize to Contents.
-            3. Add the label and table widget to the layout.
+                a. Select -> checkbox for selecting scans in the report.
+                b. Scan Name -> text for the scan name.
+                c. Total CVE IDs -> count of total cves in scan.
+                d. Unique CVE IDs -> list of total unique cves in scan.
+                e. Cache -> whether caching is "Enabled" or "Disabled".
+                f. Edit -> button for editing a specific scan.
+                g. Delete -> button for deleting a specific scan.
             """
             self.scan_table = QTableWidget()
             self.scan_table.setColumnCount(8)
 
             self.scan_table.setHorizontalHeaderLabels([
-                "Select", "Scan Name", "Total CVE IDs",
-                "Unique CVE IDs", "Cache", "Cached %", "Edit", "Delete"
+                "Select",
+                "Scan Name",
+                "Total CVE IDs",
+                "Unique CVE IDs",
+                "Cache",
+                "Cached %",
+                "Edit",
+                "Delete"
             ])
 
             self.scan_table.verticalHeader().setVisible(False)
-
             self.scan_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
             header = self.scan_table.horizontalHeader()
@@ -191,7 +186,7 @@ class ScansWindow(QMainWindow):
             _add_scan(scan_name, file_path)
             self.populate_scans_table()
 
-    def open_edit_scan_dialog(self, scan_id):
+    def open_edit_scan_dialog(self, id):
         """
         Opens the Edit Scan dialog for the selected scan.
 
@@ -200,11 +195,11 @@ class ScansWindow(QMainWindow):
         2. Create and display an EditScanDialog with the scan data.
         3. If the dialog is accepted, update the scan with the new values.
         """
-        scan_details = _get_scan_data(scan_id)
+        scan_details = _get_scan_data(id)
 
         if scan_details:
             dialog = EditScanDialog(
-                scan_id,
+                id,
                 scan_details["scan_name"],
                 scan_details["file_path"],
                 scan_details["cache_enabled"],
@@ -217,7 +212,7 @@ class ScansWindow(QMainWindow):
                 updated_cache_enabled = dialog.cache_enabled
 
                 success, message = _edit_scan(
-                    scan_id,
+                    id,
                     updated_scan_name,
                     updated_file_path,
                     updated_cache_enabled
@@ -227,41 +222,48 @@ class ScansWindow(QMainWindow):
                     self.populate_scans_table()
 
     # FUNCTIONS FOR DISPLAYING BACKEND DATA #
-    def handle_checkbox_state_change(self, scan_id, state):
+    def handle_checkbox_state_change(self, id, state):
         """
-        Updates the selected status in the database when a checkbox is toggled.
+        Updates the selected status in the db when the checkbox is toggled.
 
         This function should:
-        1. Convert the checkbox state to a boolean.
-        2. Call the backend function to update the scan's selected status.
+        1. Update the selected variable based on if the checkbox is checked.
+        2. Call the backend function to update the API key's selected field.
         """
-        selected = state == Qt.Checked
-        _update_scan_selected_status(scan_id, selected)
+        selected = 1 if state == Qt.Checked else 0
+        _update_scan_selected_field(id, selected)
 
     def populate_scans_table(self):
         """
-        Loads scan data from the database and populates the scan table.
+        Loads the scan data from the db & populates the scan table.
 
         This function should:
-        1. Retrieve all scan data from the backend.
-        2. Clear the GUI scans table.
-        3. Repopulate the scans table with the updated data.
-        4. Adds "Edit" and "Delete" buttons in their columns for scan entries.
-        5. Recall integrate_scan_group_styling to prevent table changes.
+        1. Call _get_all_scan_data to stor all scan data.
+        2. Create as many rows as there are scan entries in the db.
+        3. Re-initialize the styling for the table to style new entry.
         """
-        all_scans = _get_all_scan_data()
+        def create_checkbox_container(id: int):
+            """
+            Creates a container for the QCheckBox for a specific scan
+            in the scans table.
 
-        self.scan_table.setRowCount(0)
-        self.scan_table.setRowCount(len(all_scans))
-
-        for row, scan in enumerate(all_scans):
+            This function should:
+            1. Create a QCheckBox.
+            2. Set the QCheckBox's selected to 0/not-selected.
+            3. If the checkbox is selected, call handle_checkbox_stat_change to
+            update the selection field for that scan.
+            4. Create the following QHBoxLayout to contain the QCheckBox:
+                a. Add the QCheckBox.
+                b. Align the checkbox to the center.
+                c. Remove margins.
+            5. Return the checkbox container.
+            """
             checkbox = QCheckBox()
-            checkbox.setChecked(scan.get("selected", False))
+            checkbox.setChecked(scan.get("selected", 0))
 
-            scan_id = scan["id"]
             checkbox.stateChanged.connect(
                 lambda state,
-                s_id=scan_id: self.handle_checkbox_state_change(s_id, state)
+                s_id=id: self.handle_checkbox_state_change(s_id, state)
             )
 
             checkbox_container = QWidget()
@@ -270,23 +272,61 @@ class ScansWindow(QMainWindow):
             checkbox_layout.setAlignment(Qt.AlignCenter)
             checkbox_layout.setContentsMargins(0, 0, 0, 0)
 
+            return checkbox_container
+
+        def return_unique_cve_list_ct(unique_cve_list: str) -> int:
+            """
+            Given the string of unique cves, return the count
+            of cves in the string.
+
+            This function should:
+            1. Split the string by every ", ".
+            2. The return the count of splits.
+            """
+            return (len(unique_cve_list.split(", ")))
+
+        def add_scan_row_to_table(row: int, scan: dict):
+            """
+            Adds a singular scan into a specific row in the
+            scan table.
+
+            This function should:
+            1. Populate a table row with the following data:
+                a. Column1: a QCheckBox for toggling the selected field.
+                b. Column2: scan_name.
+                c. Column3: total_vulnerabilities (int).
+                d. Column4: unique_cves count (int).
+                e. Column5: cache_enabled (a non-pushable button for styling).
+                f. Column6: cached_percentage (a non-pushable button to style).
+                g. Column7: an edit button.
+                h. Column8: a delete button.
+            """
+            checkbox_container = create_checkbox_container(scan["id"])
             self.scan_table.setCellWidget(row, 0, checkbox_container)
 
             self.scan_table.setItem(
                 row, 1, QTableWidgetItem(scan["scan_name"])
             )
+
+            total_vulns_str = str(scan["total_vulnerabilities"])
             self.scan_table.setItem(
-                row, 2, QTableWidgetItem(scan["total_cves"])
+                row, 2, QTableWidgetItem(total_vulns_str)
             )
+
+            unique_cves_ct = return_unique_cve_list_ct(scan["unique_cve_list"])
+            unique_cves_ct_str = str(unique_cves_ct)
             self.scan_table.setItem(
-                row, 3, QTableWidgetItem(scan["unique_cves"])
+                row, 3, QTableWidgetItem(unique_cves_ct_str)
             )
-            self.scan_table.setItem(
-                row, 4, QTableWidgetItem(scan["cache_enabled"])
-            )
-            self.scan_table.setItem(
-                row, 5, QTableWidgetItem(scan["cached_percentage"])
-            )
+
+            cache_button = QPushButton(scan["cache_enabled"])
+            cache_button.setEnabled(False)
+            self.scan_table.setCellWidget(row, 4, cache_button)
+
+            cached_perc_str = f"{scan["cached_percentage"]}%"
+            cached_perc_button = QPushButton(cached_perc_str)
+            cached_perc_button.setEnabled(False)
+            self.scan_table.setCellWidget(row, 5, cached_perc_button)
 
             edit_button = QPushButton("Edit")
             edit_button.clicked.connect(
@@ -300,20 +340,28 @@ class ScansWindow(QMainWindow):
             )
             self.scan_table.setCellWidget(row, 7, delete_button)
 
+        all_scans = _get_all_scan_data()
+
+        self.scan_table.setRowCount(0)
+        self.scan_table.setRowCount(len(all_scans))
+
+        for row, scan in enumerate(all_scans):
+            add_scan_row_to_table(row, scan)
+
         integrate_scans_group_styling(self)
 
     # FUNCTIONS FOR ACTION BUTTONS IN SCAN TABLE #
-    def edit_scan(self, scan_id):
+    def edit_scan(self, id):
         """
         Opens the Edit Scan dialog when the user clicks the "Edit"
         button for a scan.
 
         This function should:
-        1. Call the open_edit_scan_dialog function with the scan_id.
+        1. Call the open_edit_scan_dialog function with the id.
         """
-        self.open_edit_scan_dialog(scan_id)
+        self.open_edit_scan_dialog(id)
 
-    def delete_scan(self, scan_id):
+    def delete_scan(self, id):
         """
         Deletes a scan when the user clicks the "Delete" button for a scan.
 
@@ -321,7 +369,7 @@ class ScansWindow(QMainWindow):
         1. Call _delete_scan to remove the scan from the db.
         2. Refresh the scan table to show the updated data.
         """
-        success, message = _delete_scan(scan_id)
+        success, message = _delete_scan(id)
 
         if success:
             self.populate_scans_table()

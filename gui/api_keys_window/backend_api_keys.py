@@ -35,9 +35,9 @@ def _add_api_key(
     """
     def check_for_errors() -> tuple[bool, str]:
         """
-        Check for errors with the user's entered in data.
+        Checks for errors with the user's entered in data.
 
-        this function should:
+        This function should:
         1. Ensure the key_name & key_value are not empty.
         """
         if key_name == "" or key_value == "":
@@ -48,10 +48,7 @@ def _add_api_key(
             return (False, "Empty Field")
         return (True, "success")
 
-    def add_key_to_db(
-            key_name: str,
-            key_value: str
-    ) -> tuple[bool, str]:
+    def add_key_to_db() -> tuple[bool, str]:
         """
         Adds the API key to the db given the key_name & key_value.
 
@@ -100,7 +97,7 @@ def _add_api_key(
     if user_input_success is False:
         return (user_input_success, user_input_message)
 
-    db_entry_success, db_entry_message = add_key_to_db(key_name, key_value)
+    db_entry_success, db_entry_message = add_key_to_db()
     return (db_entry_success, db_entry_message)
 
 
@@ -147,7 +144,7 @@ def _edit_api_key(
     def edit_key_in_db() -> tuple[bool, str]:
         """
         Given the necessary data for a particular API key
-        in the database, update the user given values.
+        in the database, update it with the user given values.
 
         This function should:
         1. Connect to the db.
@@ -251,13 +248,13 @@ def _update_api_key_selected_field(
         db_file: str = "vuln_data.db"
 ) -> tuple[bool, str]:
     """
-    Updates the selected status for a specific API key.
+    Updates the "selected" field for a specific API key.
 
     This function should:
     1. Check for the following errors:
-        a. selected equals either 0 or 1.
+        a. "selected" field equals either 0 or 1.
     2. Update the API Key in the db.
-    3. Return a GeneralErrorDialog if update fails.
+    3. Return a GeneralErrorDialog if db update fails.
     """
     def check_for_errors() -> tuple[bool, str]:
         """
@@ -265,7 +262,7 @@ def _update_api_key_selected_field(
         input parameters of this main function.
 
         This function should.
-        1. Ensure status is "Valid" or "Invalid".
+        1. Ensure "selected" field is  either "Valid" or "Invalid".
         """
         if selected != 0 and selected != 1:
             error_dialog = GeneralErrorDialog(
@@ -278,17 +275,14 @@ def _update_api_key_selected_field(
             )
         return (True, "success")
 
-    def update_selected_in_db(
-            id: int,
-            selected: int
-    ) -> tuple[bool, str]:
+    def update_selected_in_db() -> tuple[bool, str]:
         """
-        Updates the id-specificed API key's 'selected' value
+        Updates the id-specificed API key's "selected" value
         in the table/db.
 
         This function should:
         1. Connect to the db.
-        2. Update the selected field for a specific key-id.
+        2. Update the "selected" field for a specific key-id.
         3. If the update was unsuccessful, return a
         GeneralErrorDialog with the db error message.
         """
@@ -326,7 +320,7 @@ def _update_api_key_selected_field(
     if user_input_success is False:
         return (user_input_success, user_input_message)
 
-    db_update_success, db_update_message = update_selected_in_db(id, selected)
+    db_update_success, db_update_message = update_selected_in_db()
     return (db_update_success, db_update_message)
 
 
@@ -334,9 +328,9 @@ def _get_all_api_key_data(
         db_file: str = "vuln_data.db"
 ) -> list[dict]:
     """
-    This function retrieves all API keys from the db
-    table and returns them as a list of dictionaries
-    for each API key.
+    Retrieves all API keys from the db table and returns them
+    as a list of dicts for each API key.
+
     This function should:
     1. Connect to the db.
     2. Ensure each db row is returned as a dict.
@@ -384,7 +378,7 @@ def _get_api_key_data(
 
     This function should:
     1. Connect to the db.
-    2. Ensure the query returns a dict per row.
+    2. Ensure the query returns a dict value.
     3. Return the dictionary if query was successful,
     if not return a GeneralErrorDialog.
     """

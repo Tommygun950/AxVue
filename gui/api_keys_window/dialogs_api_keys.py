@@ -208,7 +208,7 @@ class EditAPIKeyDialog(QDialog):
         """
         if self.status == "Valid":
             self.status_button.setText("Valid")
-        else:
+        elif self.status == "Invalid":
             self.status_button.setText("Invalid")
 
     def toggle_status(self):

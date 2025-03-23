@@ -286,9 +286,9 @@ class APIKeysWindow(QMainWindow):
 
             This function should:
             1. Create a QCheckBox.
-            2. Set the QCheckBox's selection to false/not-selected.
+            2. Set the QCheckBox's selection to 0/not-selected.
             3. If the checkbox is selected, call hande_checkbox_state_change
-            to update the selection status for that API key.
+            to update the selection field for that API key.
             4. Create the following QHBoxLayout to contain the QCheckBox:
                 a. Add the QCheckBox.
                 b. Align the checkbox to the center.
@@ -318,7 +318,7 @@ class APIKeysWindow(QMainWindow):
 
             This function should:
             1. Populate a table row with the following data:
-                a. Column1: a QCheckBox for toggling the selected status.
+                a. Column1: a QCheckBox for toggling the selected field.
                 b. Column2: key_name.
                 c. Column3: the masked key_value for security.
                 d. Column4: status (a non-pushable button for styling).

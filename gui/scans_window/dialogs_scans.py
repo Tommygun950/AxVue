@@ -227,9 +227,9 @@ class EditScanDialog(QDialog):
         This function should:
         1. Change the text on the gui dialog depending on the value.
         """
-        if self.cache_enabled:
+        if self.cache_enabled == "Enabled":
             self.cache_button.setText("Enabled")
-        else:
+        elif self.cache_enabled == "Disabled":
             self.cache_button.setText("Disabled")
 
     def toggle_cache(self):
@@ -239,7 +239,11 @@ class EditScanDialog(QDialog):
         This funciton should:
         1. If the cache button is toggled, switch it to the opposite value.
         """
-        self.cache_enabled = not self.cache_enabled
+        if self.cache_enabled == "Enabled":
+            self.cache_enabled = "Disabled"
+        elif self.cache_enabled == "Disabled":
+            self.cache_enabled = "Enabled"
+
         self.update_cache_button_text()
 
     def browse_file(self):
