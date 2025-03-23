@@ -31,7 +31,7 @@ from gui.api_keys_window.dialogs_api_keys import (
 )
 from gui.api_keys_window.backend_api_keys import (
     _add_api_key, _edit_api_key,
-    _delete_api_key, _update_api_key_selected_status,
+    _delete_api_key, _update_api_key_selected_field,
     _get_all_api_key_data, _get_api_key_data
 )
 from gui.api_keys_window.style_api_keys import (
@@ -71,11 +71,9 @@ class APIKeysWindow(QMainWindow):
         integrate_window_styling(self)
 
         integrate_summary_group_styling(self)
-        integrate_api_keys_group_styling(self)  # First call to color buttons.
+        integrate_api_keys_group_styling(self)
 
         self.populate_api_keys_table()
-
-        integrate_api_keys_group_styling(self)  # Second call to center text.
 
     def init_api_keys_summary(self):
         """
@@ -230,8 +228,7 @@ class APIKeysWindow(QMainWindow):
             if dialog.exec_():
                 updated_api_key_name = dialog.key_name_edit.text()
                 updated_api_key_value = dialog.key_value_edit.text()
-                updated_status = dialog.status_validity
-                print(updated_status)
+                updated_status = dialog.status
 
                 success, message = _edit_api_key(
                     id,
@@ -249,11 +246,12 @@ class APIKeysWindow(QMainWindow):
         Updates the selected status in the db when the checkbox is toggled.
 
         This function should:
-        1. Convert the checkbox state to a bool.
-        2. Call the backend function to update the API key's selected status.
+        1. Update the selected variable based on if the checkbox is checked.
+        2. Call the backend function to update the API key's selected field.
         """
-        selected = state == Qt.Checked
-        _update_api_key_selected_status(id, selected)
+        selected = 1 if state == Qt.Checked else 0
+
+        _update_api_key_selected_field(id, selected)
 
     def populate_api_keys_table(self):
         """
@@ -298,7 +296,7 @@ class APIKeysWindow(QMainWindow):
             5. Return the checkbox container.
             """
             checkbox = QCheckBox()
-            checkbox.setChecked(api_key.get("selected", False))
+            checkbox.setChecked(api_key.get("selected", 0))
 
             checkbox.stateChanged.connect(
                 lambda state,
@@ -323,7 +321,7 @@ class APIKeysWindow(QMainWindow):
                 a. Column1: a QCheckBox for toggling the selected status.
                 b. Column2: key_name.
                 c. Column3: the masked key_value for security.
-                d. Column4: status.
+                d. Column4: status (a non-pushable button for styling).
                 e. Column5: an edit button.
                 f. Column6: a delete button.
             """
@@ -338,9 +336,10 @@ class APIKeysWindow(QMainWindow):
             self.api_keys_table.setItem(
                 row, 2, QTableWidgetItem(mask_key_value(plaintext_api_key))
             )
-            self.api_keys_table.setItem(
-                row, 3, QTableWidgetItem(api_key["status"])
-            )
+
+            status_button = QPushButton(api_key["status"])
+            status_button.setEnabled(False)
+            self.api_keys_table.setCellWidget(row, 3, status_button)
 
             edit_button = QPushButton("Edit")
             edit_button.clicked.connect(
