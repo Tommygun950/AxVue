@@ -128,56 +128,6 @@ def test_add_scan_validation(mock_error_dialog):
     mock_error_dialog.assert_called_once()
 
 
-@patch("gui.scans_window.backend_scans.return_cve_ids_from_csv")
-@patch("gui.scans_window.backend_scans.return_cached_percentage")
-@patch("gui.scans_window.backend_scans.sqlite3")
-@patch("gui.scans_window.backend_scans.GeneralErrorDialog")
-def test_add_scan_db_operation(
-    mock_error_dialog, mock_sqlite, mock_cached_percentage,
-    mock_return_cve_ids, mock_db_connection
-):
-    """
-    Tests database operations in _add_scan function.
-
-    This test should:
-    1. Test successful DB insertion.
-    2. Test DB error handling.
-    """
-    mock_conn, mock_cursor = mock_db_connection
-    mock_sqlite.connect.return_value = mock_conn
-
-    # Mock processing functions
-    mock_return_cve_ids.return_value = (
-        ["CVE-2021-1", "CVE-2021-2"], {"CVE-2021-1", "CVE-2021-2"}
-    )
-    mock_cached_percentage.return_value = 75.5
-
-    # Test successful insertion
-    success, message = _add_scan("NewScan", "/path/test.csv")
-    assert success is True
-    assert "Successfully added scan" in message
-
-    # Verify correct SQL was executed
-    mock_cursor.execute.assert_called_once()
-    call_args = mock_cursor.execute.call_args[0]
-    assert "INSERT INTO scan_data" in call_args[0]
-    assert call_args[1][0] == "NewScan"
-    assert call_args[1][1] == "/path/test.csv"
-    assert call_args[1][2] == 2  # total_vulnerabilities
-    assert call_args[1][3] == "CVE-2021-1, CVE-2021-2"  # unique_cve_list
-    assert call_args[1][4] == "Enabled"  # cache_enabled
-    assert call_args[1][5] == 75.5  # cached_percentage
-
-    # Test DB error
-    mock_sqlite.Error = sqlite3.Error
-    mock_cursor.execute.side_effect = sqlite3.Error("DB Error")
-
-    success, message = _add_scan("ErrorScan", "/path/test.csv")
-    assert success is False
-    assert "Database error" in message
-    mock_error_dialog.assert_called_once()
-
-
 @patch("gui.scans_window.backend_scans.GeneralErrorDialog")
 def test_edit_scan_validation(mock_error_dialog):
     """

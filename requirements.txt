@@ -3,3 +3,4 @@ requests
 reportlab
 pandas
 matplotlib
+pytest
