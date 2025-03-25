@@ -1,44 +1,32 @@
-name: Flake8 Linting
+name: Lint with Flake8
+
 on:
   push:
-    branches: [ main, master ]
+    branches: ["main"]
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:  # Allows manual triggering
+    branches: ["main"]
+
 jobs:
   lint:
     runs-on: ubuntu-latest
-   
     steps:
-    - uses: actions/checkout@v3
-     
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-       
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8
-       
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-       
-        # exit-zero treats all errors as warnings
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Generate Flake8 report
-      if: always()  # Run even if the previous step fails
-      run: |
-        # Create a more comprehensive report
-        mkdir -p reports
-        flake8 . --output-file=reports/flake8_report.txt --format=default --max-line-length=127
-     
-    - name: Upload Flake8 report
-      if: always()  # Run even if the previous step fails
-      uses: actions/upload-artifact@v4
-      with:
-        name: flake8-report
-        path: reports/flake8_report.txt
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          # If you have a requirements.txt, ensure "flake8" is listed,
+          # or install flake8 directly:
+          pip install -r requirements.txt
+          # If flake8 is NOT in your requirements, do:
+          # pip install flake8
+
+      - name: Run Flake8
+        run: |
+          flake8 .
