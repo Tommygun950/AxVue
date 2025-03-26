@@ -92,15 +92,25 @@ class MainAppWindow(QMainWindow):
     def switch_page(self, index):
         """
         Switch to the specified page index and update toolbar action states.
+        If switching to the Create Report page, refresh its tables.
 
         This function should:
         1. Set the current index of the stacked widget.
         2. Update the checked state of all actions to match the current page.
+        3. If switching to Create Report page, refresh its tables.
         """
         self.stacked_widget.setCurrentIndex(index)
 
         for i, action in enumerate(self.toolbar.actions()):
             action.setChecked(i == index)
+
+        if index == 0:
+            self.scans_page.populate_scans_table()
+        elif index == 1:
+            self.api_keys_page.populate_api_keys_table()
+        elif index == 3:
+            self.create_report_page.populate_selected_api_keys_table()
+            self.create_report_page.populate_selected_scans_table()
 
 
 if __name__ == "__main__":

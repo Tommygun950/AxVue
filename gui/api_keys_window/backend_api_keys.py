@@ -335,8 +335,7 @@ def _get_all_api_key_data(
     1. Connect to the db.
     2. Ensure each db row is returned as a dict.
     3. Add all of the API key dicts to the list.
-    4. Return either a GeneralErrorDialog or a succes
-    tuple depending on the query outcome.
+    4. Return either a GeneralErrorDialog or the list.
     """
     try:
         conn = sqlite3.connect(db_file)
