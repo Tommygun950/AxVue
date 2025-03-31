@@ -3,11 +3,11 @@
 A Python-based GUI application for comparing vulnerability scan results to aid security teams visualize performance differences.
 
 ## Table of Contents
-- [About](#-about)
-- [Features](#-features)
-- [Setup](#-setup)
-- [Feedback](#-feedback)
-- [Usage](#-usage)
+- [About]
+- [Features]
+- [Setup]
+- [Feedback]
+- [Usage]
 
 ## About
 
