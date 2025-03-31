@@ -5,9 +5,9 @@ A Python-based GUI application for comparing vulnerability scan results to aid s
 ## Table of Contents
 - [About](#-about)
 - [Features](#-features)
-- [How to Run](#-how-to-run)
-- [Feedback & Issues](#-feedback-and-issues)
-- [Open Source Usage](#-open-source-usage)
+- [Setup](#-setup)
+- [Feedback](#-feedback)
+- [Usage](#-usage)
 
 ## 🚀 About
 
@@ -25,7 +25,7 @@ of similar scope from various sources or analyzing performance trends in a singl
 - Customizable reports which allows the user to export to Excel or PDF and can select which data is included.
 - Automatic KEV Catalog recognition if user wanted to visualize attack surface in reference to CVEs in the KEV.
 
-## ⚙️ How to Run
+## ⚙️ Setup
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -47,11 +47,11 @@ pip install -r requirements.txt
 python main.py
 ```
 
-## 📃 Feedback and Issues
+## 📃 Feedback
 This project is still in developement. While currently not functional through the GUI, the backend code for the PDF creation has been tested and works. The initial
 prototype of this project solely worked through the CLI, and converting everything to a GUI has resulted in functional delay and a lot of additional code. This README
 will continue to be updated and will be more encompasing once the program has reached MVP status.
 
-## 🌐 Open Source Usage
+## 🌐 Usage
 All contributions are welcom, and if you identify any issues with the code please feel free to create an issue on this repository. My aspiration is to make this repository
 open sourced and useful to security teams looking to analyze their security posture from a holistic viewpoint, so feel free to use this project as you wish.
